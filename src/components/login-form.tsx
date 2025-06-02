@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,14 +10,62 @@ export function LoginForm({
 	...props
 }: React.ComponentProps<"form">) {
 	const navigate = useNavigate();
+
+	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
+	const [error, setError] = useState<string | null>(null);
+	const [loading, setLoading] = useState(false);
+
+	useEffect(() => {
+		const token = localStorage.getItem("token");
+		if (token) {
+			navigate("/customer-portfolio"); 
+		}
+	}, [navigate]);
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setError(null);
+		setLoading(true);
+
+		try {
+			const response = await fetch("https://cyber.defendx.co.in/api/login", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ email, password }),
+			});
+
+			const data = await response.json();
+
+			if (!data.success) {
+				setError(data.message || "Login failed");
+				setLoading(false);
+				return;
+			}
+
+			localStorage.setItem("token", data.token);
+
+			navigate("/customer-portfolio");
+		} catch (err) {
+			setError("An unexpected error occurred. Please try again.");
+			setLoading(false);
+		}
+	};
+
 	return (
-		<form className={cn("flex flex-col gap-6", className)} {...props}>
+		<form className={cn("flex flex-col gap-6", className)} onSubmit={handleSubmit} {...props}>
 			<div className="flex flex-col items-center gap-2 text-center">
 				<h1 className="text-2xl font-bold">Login to your account</h1>
 				<p className="text-muted-foreground text-sm text-balance">
 					Enter your email below to login to your account
 				</p>
 			</div>
+
+			{/* Show error message */}
+			{error && <p className="text-red-600 text-center">{error}</p>}
+
 			<div className="grid gap-6">
 				<div className="grid gap-3">
 					<Label htmlFor="email">Email</Label>
@@ -25,6 +74,8 @@ export function LoginForm({
 						type="email"
 						placeholder="m@example.com"
 						required
+						value={email}
+						onChange={(e) => setEmail(e.target.value)}
 					/>
 				</div>
 				<div className="grid gap-3">
@@ -37,16 +88,16 @@ export function LoginForm({
 							Forgot your password?
 						</a>
 					</div>
-					<Input id="password" type="password" required />
+					<Input
+						id="password"
+						type="password"
+						required
+						value={password}
+						onChange={(e) => setPassword(e.target.value)}
+					/>
 				</div>
-				<Button
-					type="submit"
-					className="w-full"
-					onClick={() => {
-						navigate("/security-profile");
-					}}
-				>
-					Login
+				<Button type="submit" className="w-full" disabled={loading}>
+					{loading ? "Logging in..." : "Login"}
 				</Button>
 			</div>
 		</form>

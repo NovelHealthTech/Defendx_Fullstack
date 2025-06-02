@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import SidebarLayout from "@/layouts/sidebar-layout";
+import axios from "axios";
 import {
 	InfoIcon,
 	ChevronDown,
@@ -18,49 +19,49 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
-
-const customers = [
-	{
-		name: "Adani Group",
-		domain: "adani.com",
-		logo: "https://logo.clearbit.com/adani.com",
-		score: 794,
-		grade: "B",
-		trend: 17,
-		trendUp: true,
-		lastAssessed: "Not assessed",
-		reassessment: "-",
-		labels: [],
-	},
-	{
-		name: "Birlasoft",
-		domain: "birlasoft.com",
-		logo: "https://logo.clearbit.com/birlasoft.com",
-		score: 861,
-		grade: "A",
-		trend: 4,
-		trendUp: true,
-		lastAssessed: "Not assessed",
-		reassessment: "-",
-		labels: [],
-	},
-	{
-		name: "Google",
-		domain: "google.com",
-		logo: "https://logo.clearbit.com/google.com",
-		score: 672,
-		grade: "B",
-		trend: 23,
-		trendUp: false,
-		lastAssessed: "Not assessed",
-		reassessment: "-",
-		labels: [],
-	},
-];
+import { useState, useEffect } from "react";
 
 export default function CustomerPortfolio() {
+	const [customers, setCustomers] = useState([]);
 	const [search, setSearch] = useState("");
+
+	useEffect(() => {
+		const fetchCustomers = async () => {
+			try {
+				const token = localStorage.getItem("token"); 
+
+				const response = await axios.post(
+					"https://cyber.defendx.co.in/api/upguard/overview",
+					{ labels: [] },
+					{
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `Bearer ${token}`,
+						},
+					}
+				);
+
+				const vendors = response.data.data.vendors || [];
+				const transformedCustomers = vendors.map((vendor) => ({
+					name: vendor.name,
+					domain: vendor.primary_hostname,
+					logo: `https://logo.clearbit.com/${vendor.primary_hostname}`,
+					score: vendor.score,
+					grade: vendor.score >= 800 ? "A" : vendor.score >= 700 ? "B" : "C",
+					trend: 0, 
+					trendUp: false,  
+					lastAssessed: vendor.assessmentStatus,
+				}));
+
+				setCustomers(transformedCustomers);
+			} catch (error) {
+				console.error("Error fetching customer data:", error);
+			}
+		};
+
+		fetchCustomers();
+		
+	}, []);
 	return (
 		<SidebarLayout
 			breadcrumbs={[
@@ -74,12 +75,12 @@ export default function CustomerPortfolio() {
 				{/* Header */}
 				<div className="flex items-center justify-between flex-wrap gap-2">
 					<div className="flex flex-col gap-1">
-						<div className="flex items-center gap-2 text-sm text-muted-foreground">
+						{/* <div className="flex items-center gap-2 text-sm text-muted-foreground">
 							<span>Zoom Insurance Brokers</span>
 							<span className="text-blue-600 underline cursor-pointer">
 								(zoominsurancebrokers.com)
 							</span>
-						</div>
+						</div> */}
 						<div className="flex items-center gap-2 mt-1">
 							<span className="text-xs text-muted-foreground">
 								Current Portfolio:
@@ -145,9 +146,9 @@ export default function CustomerPortfolio() {
 									<Users className="w-4 h-4" /> All Portfolios{" "}
 									<ChevronDown className="w-4 h-4" />
 								</Button>
-								<span className="text-xs text-muted-foreground">
+								{/* <span className="text-xs text-muted-foreground">
 									10 / 50 customers monitored
-								</span>
+								</span> */}
 							</div>
 							<div className="flex items-center gap-2">
 								<div className="relative">
@@ -161,31 +162,31 @@ export default function CustomerPortfolio() {
 									/>
 									<Search className="absolute left-2 top-2 w-4 h-4 text-muted-foreground pointer-events-none" />
 								</div>
-								<Button
+								{/* <Button
 									variant="outline"
 									size="sm"
 									className="flex items-center gap-1"
 								>
 									Tier Summary{" "}
 									<ChevronDown className="w-4 h-4" />
-								</Button>
+								</Button> */}
 								<Button
 									variant="outline"
 									size="sm"
 									className="flex items-center gap-1"
 								>
 									<Columns3 className="w-4 h-4" /> Columns
-									(6/16)
+									(6/6)
 								</Button>
 							</div>
 							<div className="flex items-center gap-2">
-								<Button
+								{/* <Button
 									variant="outline"
 									size="sm"
 									className="flex items-center gap-1"
 								>
 									Import
-								</Button>
+								</Button> */}
 								<Button
 									size="sm"
 									className="flex items-center gap-1"
@@ -215,12 +216,7 @@ export default function CustomerPortfolio() {
 										<th className="text-left py-2 px-4 font-normal">
 											Last Assessed
 										</th>
-										<th className="text-left py-2 px-4 font-normal">
-											Reassessment date
-										</th>
-										<th className="text-left py-2 px-4 font-normal">
-											Labels
-										</th>
+										
 										<th className="text-center py-2 px-4 font-normal"></th>
 									</tr>
 								</thead>
@@ -303,18 +299,7 @@ export default function CustomerPortfolio() {
 												<td className="py-2 px-4">
 													{c.lastAssessed}
 												</td>
-												<td className="py-2 px-4">
-													{c.reassessment}
-												</td>
-												<td className="py-2 px-4">
-													<Button
-														variant="outline"
-														size="sm"
-														className="border-dashed text-muted-foreground"
-													>
-														+ Add label
-													</Button>
-												</td>
+												
 												<td className="py-2 px-4 text-center">
 													<Button
 														variant="ghost"

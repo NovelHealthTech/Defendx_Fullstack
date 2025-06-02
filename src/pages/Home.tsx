@@ -18,10 +18,14 @@ const Home = () => {
 							to="/"
 							className="flex items-center gap-2 font-medium"
 						>
-							<div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground dark:bg-white dark:text-black">
-								<GalleryVerticalEnd className="size-4" />
+							<div className="flex items-center justify-center">
+								<img
+									src={`/assets/images/defend_x_logo.png`}
+									alt="Defend X Logo"
+									className="w-80 h-20"
+								/>
 							</div>
-							Acme Inc.
+
 						</Link>
 						<ThemeSwitcher />
 					</div>
