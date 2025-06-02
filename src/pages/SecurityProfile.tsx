@@ -34,11 +34,11 @@ export default function SecurityProfile() {
 			/>
 
 			{/* Summary Charts Section */}
-			<SecurityProfileSummaryCharts />
+			{/* <SecurityProfileSummaryCharts /> */}
 
-			<SecurityProfileCharts />
+			{/* <SecurityProfileCharts /> */}
 
-			<SecurityProfileCategoryGrid />
+			{/* <SecurityProfileCategoryGrid /> */}
 
 			<div className="grid auto-rows-min gap-4 grid-cols-12">
 				<div className="col-span-12 md:col-span-5 lg:col-span-3 space-y-4">
