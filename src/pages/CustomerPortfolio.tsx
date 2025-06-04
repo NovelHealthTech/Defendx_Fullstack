@@ -127,6 +127,7 @@ export default function CustomerPortfolio() {
 	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 	const [importTab, setImportTab] = useState<"manual" | "csv">("manual");
 	const [importDomains, setImportDomains] = useState("");
+	const [showCustomerProfile, setShowCustomerProfile] = useState(true);
 
 	const handleOpenFilters = () => setIsFilterSidebarOpen(true);
 	const handleCloseFilters = () => setIsFilterSidebarOpen(false);
@@ -282,7 +283,12 @@ export default function CustomerPortfolio() {
 						>
 							<Download className="w-4 h-4" /> Export
 						</Button>
-						<Button variant="outline" size="icon">
+						<Button
+							variant="outline"
+							size="icon"
+							onClick={() => setShowCustomerProfile((v) => !v)}
+							aria-label="Toggle customer profile description"
+						>
 							<InfoIcon className="w-4 h-4" />
 						</Button>
 					</div>
@@ -290,13 +296,15 @@ export default function CustomerPortfolio() {
 				{/* Description */}
 				<div className="flex flex-col gap-2">
 					<h2 className="text-2xl font-bold">Customer Portfolio</h2>
-					<p className="text-sm text-muted-foreground">
-						Customer Portfolio helps you find, track, and monitor
-						the security posture of any organization instantly. You
-						can categorize customers, compare them against industry
-						benchmarks, and see how their security posture is
-						changing over time.
-					</p>
+					{showCustomerProfile && (
+						<p className="text-sm text-muted-foreground">
+							Customer Portfolio helps you find, track, and
+							monitor the security posture of any organization
+							instantly. You can categorize customers, compare
+							them against industry benchmarks, and see how their
+							security posture is changing over time.
+						</p>
+					)}
 				</div>
 				{/* Tabs */}
 				<Tabs defaultValue="portfolio" className="w-full">
