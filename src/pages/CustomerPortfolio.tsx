@@ -24,7 +24,6 @@ import {
 	SheetContent,
 	SheetHeader,
 	SheetTitle,
-	SheetClose,
 } from "@/components/ui/sheet";
 import {
 	Accordion,
@@ -35,6 +34,14 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogFooter,
+	DialogClose,
+} from "@/components/ui/dialog";
 
 const customers = [
 	{
@@ -100,6 +107,8 @@ export default function CustomerPortfolio() {
 	const [fourthPartyProduct, setFourthPartyProduct] = useState("");
 	const [evidenceTypes, setEvidenceTypes] = useState("");
 	const [questionnaireTypes, setQuestionnaireTypes] = useState("");
+	const [isMonitorDialogOpen, setIsMonitorDialogOpen] = useState(false);
+	const [monitorSearch, setMonitorSearch] = useState("");
 
 	const handleOpenFilters = () => setIsFilterSidebarOpen(true);
 	const handleCloseFilters = () => setIsFilterSidebarOpen(false);
@@ -257,6 +266,7 @@ export default function CustomerPortfolio() {
 								<Button
 									size="sm"
 									className="flex items-center gap-1"
+									onClick={() => setIsMonitorDialogOpen(true)}
 								>
 									<BadgePlus className="w-4 h-4" /> Monitor
 									new customer
@@ -405,6 +415,57 @@ export default function CustomerPortfolio() {
 				</Tabs>
 			</div>
 
+			{/* Monitor New Customer Dialog */}
+			<Dialog
+				open={isMonitorDialogOpen}
+				onOpenChange={setIsMonitorDialogOpen}
+			>
+				<DialogContent className="max-w-xl w-full bg-white dark:bg-zinc-900 p-0 rounded-lg">
+					<DialogHeader className="flex flex-row items-center justify-between px-6 pt-6 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+						<DialogTitle>Monitor vendors</DialogTitle>
+					</DialogHeader>
+					<div className="px-6 pt-6 pb-2 flex flex-col gap-8">
+						<div className="w-full">
+							<div className="relative">
+								<Input
+									placeholder="Search..."
+									value={monitorSearch}
+									onChange={(e) =>
+										setMonitorSearch(e.target.value)
+									}
+									className="pl-10"
+									aria-label="Search for vendor"
+								/>
+								<Search className="absolute left-3 top-2.5 w-5 h-5 text-blue-500" />
+							</div>
+						</div>
+						<div className="flex flex-col items-center justify-center py-12">
+							<div className="rounded-full bg-blue-50 dark:bg-zinc-800 p-4 mb-4">
+								<Search className="w-10 h-10 text-blue-400 dark:text-blue-300" />
+							</div>
+							<div className="text-center">
+								<div className="font-medium text-zinc-700 dark:text-zinc-200 mb-1">
+									Search for a vendor
+								</div>
+								<div className="text-sm text-zinc-500 dark:text-zinc-400">
+									Enter a company's name or URL to start your
+									search.
+								</div>
+							</div>
+						</div>
+					</div>
+					<DialogFooter className="flex flex-row items-center justify-end gap-2 px-6 pb-6 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+						<Button
+							variant="ghost"
+							onClick={() => setIsMonitorDialogOpen(false)}
+						>
+							Cancel
+						</Button>
+						<Button disabled>Monitor</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
 			{/* Filter Sheet */}
 			<Sheet
 				open={isFilterSidebarOpen}
@@ -416,17 +477,6 @@ export default function CustomerPortfolio() {
 				>
 					<SheetHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
 						<SheetTitle>Filter by</SheetTitle>
-						{/* <SheetClose asChild>
-							<Button
-								variant="ghost"
-								size="icon"
-								onClick={handleCloseFilters}
-								aria-label="Close filter sidebar"
-							>
-								<span className="sr-only">Close</span>
-								&times;
-							</Button>
-						</SheetClose> */}
 					</SheetHeader>
 					<div className="flex-1 overflow-y-auto px-6 py-4">
 						<Accordion
