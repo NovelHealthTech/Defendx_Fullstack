@@ -55,7 +55,7 @@ export const routes = [
     ],
   },
   {
-    path: "/customer-summary",
+    path: "/customer-summary/:id/:domain",
     element: <ProtectedRoute />,
     children: [
       {

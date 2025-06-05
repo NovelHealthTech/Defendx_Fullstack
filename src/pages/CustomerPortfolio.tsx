@@ -28,7 +28,7 @@ export default function CustomerPortfolio() {
 	useEffect(() => {
 		const fetchCustomers = async () => {
 			try {
-				const token = localStorage.getItem("token"); 
+				const token = localStorage.getItem("token");
 
 				const response = await axios.post(
 					"https://cyber.defendx.co.in/api/upguard/overview",
@@ -43,13 +43,14 @@ export default function CustomerPortfolio() {
 
 				const vendors = response.data.data.vendors || [];
 				const transformedCustomers = vendors.map((vendor) => ({
+					id: vendor.id,
 					name: vendor.name,
 					domain: vendor.primary_hostname,
 					logo: `https://logo.clearbit.com/${vendor.primary_hostname}`,
 					score: vendor.score,
 					grade: vendor.score >= 800 ? "A" : vendor.score >= 700 ? "B" : "C",
-					trend: 0, 
-					trendUp: false,  
+					trend: 0,
+					trendUp: false,
 					lastAssessed: vendor.assessmentStatus,
 				}));
 
@@ -60,7 +61,7 @@ export default function CustomerPortfolio() {
 		};
 
 		fetchCustomers();
-		
+
 	}, []);
 	return (
 		<SidebarLayout
@@ -216,7 +217,7 @@ export default function CustomerPortfolio() {
 										<th className="text-left py-2 px-4 font-normal">
 											Last Assessed
 										</th>
-										
+
 										<th className="text-center py-2 px-4 font-normal"></th>
 									</tr>
 								</thead>
@@ -249,15 +250,20 @@ export default function CustomerPortfolio() {
 														<Plus className="w-4 h-4" />
 													</Button>
 												</td>
-												<td className="py-2 px-4 flex items-center gap-2">
+												<td
+													className="py-2 px-4 flex items-center gap-2 cursor-pointer"
+													onClick={() => {
+														// Save to local storage
+														localStorage.setItem('customerId', c.id);
+														localStorage.setItem('customerDomain', c.domain);
+
+														// Navigate to the customer summary route
+														window.location.href = `/customer-summary/${c.id}/${c.domain}`;
+													}}
+												>
 													<Avatar className="w-7 h-7">
-														<AvatarImage
-															src={c.logo}
-															alt={c.name}
-														/>
-														<AvatarFallback>
-															{c.name[0]}
-														</AvatarFallback>
+														<AvatarImage src={c.logo} alt={c.name} />
+														<AvatarFallback>{c.name[0]}</AvatarFallback>
 													</Avatar>
 													<div className="flex flex-col">
 														<span className="font-medium text-foreground leading-tight">
@@ -268,6 +274,7 @@ export default function CustomerPortfolio() {
 														</span>
 													</div>
 												</td>
+
 												<td className="py-2 px-4">
 													<Badge
 														variant="outline"
@@ -299,7 +306,7 @@ export default function CustomerPortfolio() {
 												<td className="py-2 px-4">
 													{c.lastAssessed}
 												</td>
-												
+
 												<td className="py-2 px-4 text-center">
 													<Button
 														variant="ghost"
