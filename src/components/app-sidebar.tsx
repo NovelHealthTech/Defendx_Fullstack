@@ -77,8 +77,13 @@ const data = {
 			icon: Map,
 		},
 		{
-			title: "Questionnaires",
-			url: "#",
+			title: "Questionnaire Library",
+			url: "/questionnaire-library",
+			icon: BookOpen,
+		},
+		{
+			title: "Security Questionnaires",
+			url: "/security-questionnaires",
 			icon: BookOpen,
 		},
 		{
