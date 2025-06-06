@@ -20,7 +20,7 @@ type Props = {
 	setExportDelivery: (delivery: "email" | "save") => void;
 };
 
-const ExportCustomersDialog: React.FC<Props> = ({
+const ExportDialog: React.FC<Props> = ({
 	open,
 	onOpenChange,
 	exportFormat,
@@ -33,7 +33,7 @@ const ExportCustomersDialog: React.FC<Props> = ({
 	<Dialog open={open} onOpenChange={onOpenChange}>
 		<DialogContent className="max-w-xl w-full bg-white dark:bg-zinc-900 p-0 rounded-lg">
 			<DialogHeader className="flex flex-row items-center justify-between px-6 pt-6 pb-2 border-b border-zinc-200 dark:border-zinc-800">
-				<DialogTitle>Export Customers</DialogTitle>
+				<DialogTitle>Export</DialogTitle>
 			</DialogHeader>
 			<div className="px-6 pt-6 pb-2 flex flex-col gap-8">
 				{/* Format */}
@@ -106,7 +106,7 @@ const ExportCustomersDialog: React.FC<Props> = ({
 					<div className="text-xs text-blue-700 dark:text-blue-400">
 						How often do you want to receive this report?
 					</div>
-					<div className="flex gap-8 mt-2">
+					<div className="flex gap-8 mt-2 text-sm">
 						<label className="flex items-center gap-2 cursor-pointer">
 							<input
 								type="radio"
@@ -136,7 +136,7 @@ const ExportCustomersDialog: React.FC<Props> = ({
 					<div className="text-xs text-blue-700 dark:text-blue-400">
 						How would you like to receive this report?
 					</div>
-					<div className="flex gap-8 mt-2">
+					<div className="flex gap-8 mt-2 text-sm">
 						<label className="flex items-center gap-2 cursor-pointer">
 							<input
 								type="radio"
@@ -174,4 +174,4 @@ const ExportCustomersDialog: React.FC<Props> = ({
 	</Dialog>
 );
 
-export default ExportCustomersDialog;
+export default ExportDialog;

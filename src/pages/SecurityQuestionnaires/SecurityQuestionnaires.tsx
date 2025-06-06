@@ -15,7 +15,7 @@ import {
 	CalendarDays,
 	UserCheck,
 } from "lucide-react";
-import ExportCustomersDialog from "@/components/customer-portfolio/ExportCustomersDialog";
+import ExportDialog from "@/components/ExportDialog";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
 	Accordion,
@@ -119,7 +119,7 @@ export default function SecurityQuestionnaires() {
 			/>
 
 			{/* Export Dialog */}
-			<ExportCustomersDialog
+			<ExportDialog
 				open={isExportDialogOpen}
 				onOpenChange={setIsExportDialogOpen}
 				exportFormat={"pdf"}

@@ -5,14 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-	ChevronDown,
-	Eye,
-	Copy,
-	Edit2,
-	MoreVertical,
-	Info,
-} from "lucide-react";
+import { ChevronDown, Copy, Edit2, MoreVertical, Info } from "lucide-react";
 import SidebarLayout from "@/layouts/sidebar-layout";
 import PageHeader from "@/components/PageHeader";
 import {

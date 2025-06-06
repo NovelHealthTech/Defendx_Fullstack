@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import CustomerPortfolioHeader from "@/components/customer-portfolio/CustomerPortfolioHeader";
 import CustomerPortfolioDescription from "@/components/customer-portfolio/CustomerPortfolioDescription";
-import ExportCustomersDialog from "@/components/customer-portfolio/ExportCustomersDialog";
+import ExportDialog from "@/components/ExportDialog";
 import ImportCustomersDialog from "@/components/customer-portfolio/ImportCustomersDialog";
 import MonitorCustomerDialog from "@/components/customer-portfolio/MonitorCustomerDialog";
 import CustomerPortfolioFilterSidebar from "@/components/customer-portfolio/CustomerPortfolioFilterSidebar";
@@ -341,7 +341,7 @@ export default function CustomerPortfolio() {
 				</Tabs>
 			</div>
 
-			<ExportCustomersDialog
+			<ExportDialog
 				open={isExportDialogOpen}
 				onOpenChange={setIsExportDialogOpen}
 				exportFormat={exportFormat}
