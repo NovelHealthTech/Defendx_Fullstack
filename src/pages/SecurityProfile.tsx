@@ -3,9 +3,6 @@ import SecurityProfileControls from "@/components/security-profile/security-prof
 import SecurityProfileDomainsAndIps from "@/components/security-profile/security-profile-domains-and-ips";
 import SecurityProfileEvidence from "@/components/security-profile/security-profile-evidence";
 import SecurityProfileSummary from "@/components/security-profile/security-profile-summary";
-import SecurityProfileCharts from "@/components/security-profile/SecurityProfileCharts";
-import SecurityProfileCategoryGrid from "@/components/security-profile/SecurityProfileCategoryGrid";
-import SecurityProfileSummaryCharts from "@/components/security-profile/SecurityProfileSummaryCharts";
 import { Button } from "@/components/ui/button";
 import SidebarLayout from "@/layouts/sidebar-layout";
 import { InfoIcon } from "lucide-react";

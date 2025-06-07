@@ -44,13 +44,18 @@ export default function CustomerPortfolio() {
 				);
 
 				const vendors = response.data.data.vendors || [];
-				const transformedCustomers = vendors.map((vendor) => ({
+				const transformedCustomers = vendors.map((vendor: any) => ({
 					id: vendor.id,
 					name: vendor.name,
 					domain: vendor.primary_hostname,
 					logo: `https://logo.clearbit.com/${vendor.primary_hostname}`,
 					score: vendor.score,
-					grade: vendor.score >= 800 ? "A" : vendor.score >= 700 ? "B" : "C",
+					grade:
+						vendor.score >= 800
+							? "A"
+							: vendor.score >= 700
+							? "B"
+							: "C",
 					trend: 0,
 					trendUp: false,
 					lastAssessed: vendor.assessmentStatus,
@@ -63,7 +68,6 @@ export default function CustomerPortfolio() {
 		};
 
 		fetchCustomers();
-
 	}, []);
 	return (
 		<SidebarLayout
@@ -226,7 +230,7 @@ export default function CustomerPortfolio() {
 								<tbody>
 									{customers
 										.filter(
-											(c) =>
+											(c: any) =>
 												c.name
 													.toLowerCase()
 													.includes(
@@ -238,7 +242,7 @@ export default function CustomerPortfolio() {
 														search.toLowerCase()
 													)
 										)
-										.map((c) => (
+										.map((c: any) => (
 											<tr
 												key={c.domain}
 												className="border-b last:border-0"
@@ -256,16 +260,27 @@ export default function CustomerPortfolio() {
 													className="py-2 px-4 flex items-center gap-2 cursor-pointer"
 													onClick={() => {
 														// Save to local storage
-														localStorage.setItem('customerId', c.id);
-														localStorage.setItem('customerDomain', c.domain);
+														localStorage.setItem(
+															"customerId",
+															c.id
+														);
+														localStorage.setItem(
+															"customerDomain",
+															c.domain
+														);
 
 														// Navigate to the customer summary route
 														window.location.href = `/customer-summary/${c.id}/${c.domain}`;
 													}}
 												>
 													<Avatar className="w-7 h-7">
-														<AvatarImage src={c.logo} alt={c.name} />
-														<AvatarFallback>{c.name[0]}</AvatarFallback>
+														<AvatarImage
+															src={c.logo}
+															alt={c.name}
+														/>
+														<AvatarFallback>
+															{c.name[0]}
+														</AvatarFallback>
 													</Avatar>
 													<div className="flex flex-col">
 														<span className="font-medium text-foreground leading-tight">
