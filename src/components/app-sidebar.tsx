@@ -58,7 +58,7 @@ const data = {
 		},
 		{
 			title: "Risk Profile",
-			url: "#",
+			url: "/risk-profile",
 			icon: PieChart,
 		},
 		{

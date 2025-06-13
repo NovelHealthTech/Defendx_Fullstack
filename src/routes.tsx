@@ -31,6 +31,7 @@ const CustomerViewSecurityQuestionnaire = lazy(
 			"./pages/SecurityQuestionnaires/CustomerViewSecurityQuestionnaire.tsx"
 		)
 );
+const RiskProfile = lazy(() => import("./pages/RiskProfile.tsx"));
 
 export const routes = [
 	{
@@ -52,6 +53,10 @@ export const routes = [
 	{
 		path: "/customer-summary",
 		element: <CustomerSummary />,
+	},
+	{
+		path: "/risk-profile",
+		element: <RiskProfile />,
 	},
 	{
 		path: "/customer-portfolio",
