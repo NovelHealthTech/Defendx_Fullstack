@@ -10,12 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import SidebarLayout from "@/layouts/sidebar-layout";
 import {
-	Building2,
 	Globe,
 	ShieldCheck,
-	PieChart as PieChartIcon,
 	MoreVertical,
-	PenBoxIcon,
 	Filter,
 	Download,
 } from "lucide-react";
@@ -34,17 +31,14 @@ import {
 	DropdownMenuContent,
 	DropdownMenuGroup,
 	DropdownMenuItem,
-	DropdownMenuLabel,
 	DropdownMenuPortal,
 	DropdownMenuSeparator,
-	DropdownMenuShortcut,
 	DropdownMenuSub,
 	DropdownMenuSubContent,
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link } from "react-router";
-import { ButtonGroup } from "@/components/ButtonGroup";
 import PageHeader from "@/components/PageHeader";
 import React from "react";
 import {
@@ -57,6 +51,8 @@ import {
 import { DataTable } from "@/components/DataTable";
 import CustomAccordion from "@/components/CustomAccordion";
 import DrawerSheet from "@/components/DrawerSheet";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import ExportDialog from "@/components/ExportDialog";
 
 // Dummy Data
 const customer = {
@@ -217,8 +213,8 @@ const columns = [
 						row.original.severity.toLowerCase() === "critical"
 							? "destructive"
 							: row.original.severity.toLowerCase() === "high"
-								? "default"
-								: "outline"
+							? "default"
+							: "outline"
 					}
 				>
 					{row.original.severity}
@@ -246,6 +242,24 @@ export default function RiskProfile() {
 		React.useState(false);
 	const [selectedControlAction, selectedControlActionSet] =
 		React.useState<any>(null);
+
+	// Filter sidebar state
+	const [openFilterSidebar, setOpenFilterSidebar] = React.useState(false);
+	const [labelMatchType, setLabelMatchType] = React.useState("any");
+	const [labelSearch, setLabelSearch] = React.useState("");
+	const [findingSearch, setFindingSearch] = React.useState("");
+
+	// Export dialog state
+	const [openExportDialog, setOpenExportDialog] = React.useState(false);
+	const [exportFormat, setExportFormat] = React.useState<"pdf" | "excel">(
+		"pdf"
+	);
+	const [exportFrequency, setExportFrequency] = React.useState<
+		"once" | "recurring"
+	>("once");
+	const [exportDelivery, setExportDelivery] = React.useState<
+		"email" | "save"
+	>("email");
 
 	const filteredData = chartData.filter((item) => {
 		const date = new Date(item.date);
@@ -317,7 +331,10 @@ export default function RiskProfile() {
 			]}
 		>
 			<div className="space-y-4">
-				<CustomerHeader />
+				<CustomerHeader
+					onOpenFilterSidebar={() => setOpenFilterSidebar(true)}
+					onOpenExportDialog={() => setOpenExportDialog(true)}
+				/>
 				<RiskOverview
 					timeRange={timeRange}
 					setTimeRange={setTimeRange}
@@ -325,6 +342,103 @@ export default function RiskProfile() {
 				/>
 				<RiskDetails data={data} extendColumns={extendColumns} />
 			</div>
+
+			{/* Filter Sidebar */}
+			<DrawerSheet
+				open={openFilterSidebar}
+				onOpenChange={setOpenFilterSidebar}
+				className="w-[350px] sm:min-w-[400px]"
+				side="right"
+				title="Filter by"
+			>
+				<div className="space-y-8">
+					{/* Label Section */}
+					<div>
+						<div className="font-semibold mb-2">Label</div>
+						<div className="space-y-2 mb-2">
+							<div className="flex items-center gap-2">
+								<RadioGroup
+									value={labelMatchType}
+									onValueChange={setLabelMatchType}
+									className="flex flex-col gap-1"
+								>
+									<label className="flex items-center gap-2 text-sm">
+										<RadioGroupItem
+											value="any"
+											id="label-any"
+										/>{" "}
+										Match any
+									</label>
+									<label className="flex items-center gap-2 text-sm">
+										<RadioGroupItem
+											value="all"
+											id="label-all"
+										/>{" "}
+										Match all
+									</label>
+									<label className="flex items-center gap-2 text-sm">
+										<RadioGroupItem
+											value="exclude"
+											id="label-exclude"
+										/>{" "}
+										Do not include
+									</label>
+								</RadioGroup>
+							</div>
+							<input
+								type="text"
+								placeholder="Type to search labels"
+								className="w-full mt-2"
+								value={labelSearch}
+								onChange={(e) => setLabelSearch(e.target.value)}
+							/>
+						</div>
+					</div>
+					{/* Finding Section */}
+					<div>
+						<div className="font-semibold mb-2">Finding</div>
+						<input
+							type="text"
+							placeholder="Type to search findings"
+							className="w-full"
+							value={findingSearch}
+							onChange={(e) => setFindingSearch(e.target.value)}
+						/>
+					</div>
+				</div>
+				{/* Footer Buttons */}
+				<div className="flex justify-between gap-2 mt-8">
+					<Button
+						variant="outline"
+						className="flex-1"
+						onClick={() => {
+							setLabelMatchType("any");
+							setLabelSearch("");
+							setFindingSearch("");
+						}}
+					>
+						Reset
+					</Button>
+					<Button
+						className="flex-1"
+						onClick={() => setOpenFilterSidebar(false)}
+					>
+						Apply
+					</Button>
+				</div>
+			</DrawerSheet>
+
+			{/* Export Dialog */}
+			<ExportDialog
+				open={openExportDialog}
+				onOpenChange={setOpenExportDialog}
+				exportFormat={exportFormat}
+				setExportFormat={setExportFormat}
+				exportFrequency={exportFrequency}
+				setExportFrequency={setExportFrequency}
+				exportDelivery={exportDelivery}
+				setExportDelivery={setExportDelivery}
+			/>
 
 			<DrawerSheet
 				open={openControlActionDrawer}
@@ -406,7 +520,13 @@ export default function RiskProfile() {
 }
 
 // Reusable Section Components
-function CustomerHeader() {
+function CustomerHeader({
+	onOpenFilterSidebar,
+	onOpenExportDialog,
+}: {
+	onOpenFilterSidebar: () => void;
+	onOpenExportDialog: () => void;
+}) {
 	return (
 		<>
 			<PageHeader
@@ -433,60 +553,17 @@ function CustomerHeader() {
 						</div>
 					</div>
 				}
-				actions={
-					<ButtonGroup>
-						<Button variant="outline">Compare</Button>
-						<Button variant="outline">Generate Report</Button>
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button variant="outline" size="icon">
-									<MoreVertical className="w-4 h-4" />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent className="w-56" align="start">
-								<DropdownMenuLabel>
-									Manage Customer
-								</DropdownMenuLabel>
-								<DropdownMenuGroup>
-									<DropdownMenuItem>
-										Profile
-										<DropdownMenuShortcut>
-											⇧⌘P
-										</DropdownMenuShortcut>
-									</DropdownMenuItem>
-									<DropdownMenuItem>
-										Billing
-										<DropdownMenuShortcut>
-											⌘B
-										</DropdownMenuShortcut>
-									</DropdownMenuItem>
-									<DropdownMenuItem>
-										Settings
-										<DropdownMenuShortcut>
-											⌘S
-										</DropdownMenuShortcut>
-									</DropdownMenuItem>
-									<DropdownMenuItem>
-										Keyboard shortcuts
-										<DropdownMenuShortcut>
-											⌘K
-										</DropdownMenuShortcut>
-									</DropdownMenuItem>
-								</DropdownMenuGroup>
-							</DropdownMenuContent>
-						</DropdownMenu>
-					</ButtonGroup>
-				}
+				actions={null}
 			/>
 			<PageHeader
 				title="Risk Profile"
 				info="Your customer's risk profile helps you instantly to understand their security posture. Monnitor your customer's risk profile to ensure they are compliant with your security policies, drill into their risk profile to understand their security posture and take action to improve their security posture."
 				actions={
 					<>
-						<Button variant="outline">
+						<Button variant="outline" onClick={onOpenFilterSidebar}>
 							Apply Filter <Filter className="w-4 h-4" />
 						</Button>
-						<Button variant="outline">
+						<Button variant="outline" onClick={onOpenExportDialog}>
 							Export <Download className="w-4 h-4" />
 						</Button>
 					</>

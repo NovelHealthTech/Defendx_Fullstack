@@ -1,30 +1,27 @@
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import {
-	ChartContainer,
-	ChartTooltip,
-	ChartTooltipContent,
-} from "@/components/ui/chart";
-import { PieChart, Pie, Cell } from "recharts";
+import React from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import SidebarLayout from "@/layouts/sidebar-layout";
 import {
 	Building2,
 	Globe,
-	ShieldCheck,
-	Star,
-	Users,
-	MapPin,
-	FileCheck2,
 	FileWarning,
 	FolderKanban,
-	ListChecks,
-	FileText,
 	AlertTriangle,
 	CheckCircle2,
-	PieChart as PieChartIcon,
+	Filter,
+	Download,
 } from "lucide-react";
+import { Link } from "react-router";
+import SectionCard from "@/components/customer-summary/SectionCard";
+import CompanyProfile from "@/components/customer-summary/CompanyProfile";
+import SubsidiariesTable from "@/components/customer-summary/SubsidiariesTable";
+import RiskManagementSection from "@/components/customer-summary/RiskManagementSection";
+import RiskOverview from "@/components/customer-summary/RiskOverview";
+import PageHeader from "@/components/PageHeader";
+import DrawerSheet from "@/components/DrawerSheet";
+import ExportDialog from "@/components/ExportDialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Button } from "@/components/ui/button";
 
 // Dummy Data
 const customer = {
@@ -38,380 +35,296 @@ const customer = {
 	headquarters: "Ahmedabad, GJ",
 };
 
-const riskBreakdown = [
-	{ label: "Critical", value: 1, color: "#dc2626" },
-	{ label: "High", value: 5, color: "#f59e42" },
-	{ label: "Medium", value: 18, color: "#fbbf24" },
-	{ label: "Low", value: 12, color: "#22c55e" },
-];
-
-const riskManagement = [
-	{ title: "Continue your risk assessment", status: "In Progress" },
-	{ title: "Remediation", complete: 0, inProgress: 0 },
-	{ title: "Additional Evidence", uploaded: 0, shared: 0, requested: 0 },
-	{ title: "Domains and IPs", active: 292 },
-	{ title: "Security Questionnaires", complete: 0, inProgress: 0, shared: 0 },
-];
-
-const subsidiaries = [
-	{ name: "ACC Limited", website: "acclimited.com", score: 754, grade: "B" },
+// Dummy chart data for all sections
+const sectionData = [
 	{
-		name: "Adani Capital",
-		website: "adanicapital.in",
-		score: 683,
+		title: "UpGuard Cyber Risk Rating",
+		rating: 794,
 		grade: "B",
+		max: 950,
+		chart: [
+			{ date: "Jun '24", value: 800 },
+			{ date: "Aug '24", value: 820 },
+			{ date: "Oct '24", value: 810 },
+			{ date: "Dec '24", value: 790 },
+			{ date: "Feb '25", value: 794 },
+		],
+		breakdown: [
+			{
+				label: "Critical",
+				value: 1,
+				color: "#dc2626",
+				icon: AlertTriangle,
+			},
+			{ label: "High", value: 5, color: "#f59e42", icon: FileWarning },
+			{
+				label: "Medium",
+				value: 18,
+				color: "#fbbf24",
+				icon: FolderKanban,
+			},
+			{ label: "Low", value: 12, color: "#22c55e", icon: CheckCircle2 },
+		],
 	},
 	{
-		name: "Adani Energy Solutions Limited",
-		website: "adanienergysolutions.com",
-		score: 596,
-		grade: "C",
-	},
-	{
-		name: "Adani Enterprises Limited",
-		website: "adanienterprises.com",
-		score: 754,
+		title: "Website",
+		rating: 716,
 		grade: "B",
+		max: 950,
+		chart: [
+			{ date: "Jun '24", value: 700 },
+			{ date: "Aug '24", value: 710 },
+			{ date: "Oct '24", value: 715 },
+			{ date: "Dec '24", value: 720 },
+			{ date: "Feb '25", value: 716 },
+		],
+		breakdown: [
+			{
+				label: "Critical",
+				value: 0,
+				color: "#dc2626",
+				icon: AlertTriangle,
+			},
+			{ label: "High", value: 0, color: "#f59e42", icon: FileWarning },
+			{ label: "Medium", value: 6, color: "#fbbf24", icon: FolderKanban },
+			{ label: "Low", value: 5, color: "#22c55e", icon: CheckCircle2 },
+		],
 	},
 	{
-		name: "Adani Foundation",
-		website: "adanifoundation.org",
-		score: 796,
+		title: "IP/Domain Reputation",
+		rating: 950,
+		grade: "A",
+		max: 950,
+		chart: [
+			{ date: "Jun '24", value: 950 },
+			{ date: "Aug '24", value: 950 },
+			{ date: "Oct '24", value: 950 },
+			{ date: "Dec '24", value: 950 },
+			{ date: "Feb '25", value: 950 },
+		],
+		breakdown: [
+			{
+				label: "Critical",
+				value: 0,
+				color: "#dc2626",
+				icon: AlertTriangle,
+			},
+			{ label: "High", value: 0, color: "#f59e42", icon: FileWarning },
+			{ label: "Medium", value: 0, color: "#fbbf24", icon: FolderKanban },
+			{ label: "Low", value: 0, color: "#22c55e", icon: CheckCircle2 },
+		],
+	},
+	{
+		title: "Encryption",
+		rating: 653,
 		grade: "B",
+		max: 950,
+		chart: [
+			{ date: "Jun '24", value: 650 },
+			{ date: "Aug '24", value: 655 },
+			{ date: "Oct '24", value: 660 },
+			{ date: "Dec '24", value: 655 },
+			{ date: "Feb '25", value: 653 },
+		],
+		breakdown: [
+			{
+				label: "Critical",
+				value: 1,
+				color: "#dc2626",
+				icon: AlertTriangle,
+			},
+			{ label: "High", value: 4, color: "#f59e42", icon: FileWarning },
+			{ label: "Medium", value: 6, color: "#fbbf24", icon: FolderKanban },
+			{ label: "Low", value: 2, color: "#22c55e", icon: CheckCircle2 },
+		],
+	},
+	{
+		title: "Data Leakage",
+		rating: 950,
+		grade: "A",
+		max: 950,
+		chart: [
+			{ date: "Jun '24", value: 950 },
+			{ date: "Aug '24", value: 950 },
+			{ date: "Oct '24", value: 950 },
+			{ date: "Dec '24", value: 950 },
+			{ date: "Feb '25", value: 950 },
+		],
+		breakdown: [
+			{
+				label: "Critical",
+				value: 0,
+				color: "#dc2626",
+				icon: AlertTriangle,
+			},
+			{ label: "High", value: 0, color: "#f59e42", icon: FileWarning },
+			{ label: "Medium", value: 0, color: "#fbbf24", icon: FolderKanban },
+			{ label: "Low", value: 0, color: "#22c55e", icon: CheckCircle2 },
+		],
+	},
+	{
+		title: "DNS",
+		rating: 939,
+		grade: "A",
+		max: 950,
+		chart: [
+			{ date: "Jun '24", value: 939 },
+			{ date: "Aug '24", value: 939 },
+			{ date: "Oct '24", value: 939 },
+			{ date: "Dec '24", value: 939 },
+			{ date: "Feb '25", value: 939 },
+		],
+		breakdown: [
+			{
+				label: "Critical",
+				value: 0,
+				color: "#dc2626",
+				icon: AlertTriangle,
+			},
+			{ label: "High", value: 0, color: "#f59e42", icon: FileWarning },
+			{ label: "Medium", value: 0, color: "#fbbf24", icon: FolderKanban },
+			{ label: "Low", value: 3, color: "#22c55e", icon: CheckCircle2 },
+		],
+	},
+	{
+		title: "Brand Reputation",
+		rating: 950,
+		grade: "A",
+		max: 950,
+		chart: [
+			{ date: "Jun '24", value: 950 },
+			{ date: "Aug '24", value: 950 },
+			{ date: "Oct '24", value: 950 },
+			{ date: "Dec '24", value: 950 },
+			{ date: "Feb '25", value: 950 },
+		],
+		breakdown: [
+			{
+				label: "Critical",
+				value: 0,
+				color: "#dc2626",
+				icon: AlertTriangle,
+			},
+			{ label: "High", value: 0, color: "#f59e42", icon: FileWarning },
+			{ label: "Medium", value: 0, color: "#fbbf24", icon: FolderKanban },
+			{ label: "Low", value: 0, color: "#22c55e", icon: CheckCircle2 },
+		],
+	},
+	{
+		title: "Network",
+		rating: 942,
+		grade: "A",
+		max: 950,
+		chart: [
+			{ date: "Jun '24", value: 940 },
+			{ date: "Aug '24", value: 942 },
+			{ date: "Oct '24", value: 942 },
+			{ date: "Dec '24", value: 942 },
+			{ date: "Feb '25", value: 942 },
+		],
+		breakdown: [
+			{
+				label: "Critical",
+				value: 0,
+				color: "#dc2626",
+				icon: AlertTriangle,
+			},
+			{ label: "High", value: 0, color: "#f59e42", icon: FileWarning },
+			{ label: "Medium", value: 6, color: "#fbbf24", icon: FolderKanban },
+			{ label: "Low", value: 0, color: "#22c55e", icon: CheckCircle2 },
+		],
+	},
+	{
+		title: "Email",
+		rating: 798,
+		grade: "B",
+		max: 950,
+		chart: [
+			{ date: "Jun '24", value: 800 },
+			{ date: "Aug '24", value: 798 },
+			{ date: "Oct '24", value: 798 },
+			{ date: "Dec '24", value: 798 },
+			{ date: "Feb '25", value: 798 },
+		],
+		breakdown: [
+			{
+				label: "Critical",
+				value: 0,
+				color: "#dc2626",
+				icon: AlertTriangle,
+			},
+			{ label: "High", value: 1, color: "#f59e42", icon: FileWarning },
+			{ label: "Medium", value: 0, color: "#fbbf24", icon: FolderKanban },
+			{ label: "Low", value: 2, color: "#22c55e", icon: CheckCircle2 },
+		],
+	},
+	{
+		title: "Vulnerability Management",
+		rating: 950,
+		grade: "A",
+		max: 950,
+		chart: [
+			{ date: "Jun '24", value: 950 },
+			{ date: "Aug '24", value: 950 },
+			{ date: "Oct '24", value: 950 },
+			{ date: "Dec '24", value: 950 },
+			{ date: "Feb '25", value: 950 },
+		],
+		breakdown: [
+			{
+				label: "Critical",
+				value: 0,
+				color: "#dc2626",
+				icon: AlertTriangle,
+			},
+			{ label: "High", value: 0, color: "#f59e42", icon: FileWarning },
+			{ label: "Medium", value: 0, color: "#fbbf24", icon: FolderKanban },
+			{ label: "Low", value: 0, color: "#22c55e", icon: CheckCircle2 },
+		],
+	},
+	{
+		title: "Attack Surface",
+		rating: 950,
+		grade: "A",
+		max: 950,
+		chart: [
+			{ date: "Jun '24", value: 950 },
+			{ date: "Aug '24", value: 950 },
+			{ date: "Oct '24", value: 950 },
+			{ date: "Dec '24", value: 950 },
+			{ date: "Feb '25", value: 950 },
+		],
+		breakdown: [
+			{
+				label: "Critical",
+				value: 0,
+				color: "#dc2626",
+				icon: AlertTriangle,
+			},
+			{ label: "High", value: 0, color: "#f59e42", icon: FileWarning },
+			{ label: "Medium", value: 0, color: "#fbbf24", icon: FolderKanban },
+			{ label: "Low", value: 0, color: "#22c55e", icon: CheckCircle2 },
+		],
 	},
 ];
-
-const pieData = [
-	{ name: "IP/Domain Reputation", value: 950, color: "#22c55e" },
-	{ name: "Encryption", value: 653, color: "#fbbf24" },
-	{ name: "Vulnerability Management", value: 950, color: "#22c55e" },
-	{ name: "Attack Surface", value: 950, color: "#22c55e" },
-];
-
-// Reusable Section Components
-function CustomerHeader() {
-	return (
-		<div className="flex flex-col gap-4">
-			<h2 className="text-2xl font-bold flex items-center gap-2">
-				<Building2 className="w-6 h-6 text-muted-foreground" /> Customer
-				Summary
-			</h2>
-			<div className="flex flex-row items-center gap-4">
-				<Avatar>
-					<AvatarFallback>{customer.name[0]}</AvatarFallback>
-				</Avatar>
-				<div>
-					<CardTitle className="text-xl flex items-center gap-2">
-						<Building2 className="w-5 h-5 text-muted-foreground" />{" "}
-						{customer.name}
-					</CardTitle>
-					<div className="text-muted-foreground text-sm flex items-center gap-1">
-						<Globe className="w-4 h-4" /> {customer.domain}
-					</div>
-				</div>
-				<div className="ml-auto flex items-center gap-2">
-					<Badge
-						variant="outline"
-						className="text-lg px-3 py-1 border-green-500 text-green-600 flex items-center gap-1"
-					>
-						<ShieldCheck className="w-4 h-4" />
-						{customer.ratingGrade}
-					</Badge>
-					<span className="text-3xl font-bold text-green-600 flex items-center gap-1">
-						<Star className="w-5 h-5 text-yellow-400" />
-						{customer.rating}
-					</span>
-					<span className="text-muted-foreground self-end">
-						/ {customer.ratingMax}
-					</span>
-				</div>
-			</div>
-		</div>
-	);
-}
-
-function RiskOverview() {
-	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className="flex items-center gap-2">
-					<AlertTriangle className="w-5 h-5 text-orange-500" />{" "}
-					Current Risks by Severity
-				</CardTitle>
-			</CardHeader>
-			<CardContent className="flex gap-6">
-				{riskBreakdown.map((risk) => (
-					<div
-						key={risk.label}
-						className="flex flex-col items-center"
-					>
-						<Badge
-							style={{ backgroundColor: risk.color }}
-							className="text-white mb-1 flex items-center gap-1"
-						>
-							{risk.label === "Critical" && (
-								<AlertTriangle className="w-3 h-3" />
-							)}
-							{risk.label === "High" && (
-								<FileWarning className="w-3 h-3" />
-							)}
-							{risk.label === "Medium" && (
-								<FolderKanban className="w-3 h-3" />
-							)}
-							{risk.label === "Low" && (
-								<CheckCircle2 className="w-3 h-3" />
-							)}
-							{risk.value}
-						</Badge>
-						<span className="text-sm text-muted-foreground">
-							{risk.label}
-						</span>
-					</div>
-				))}
-			</CardContent>
-		</Card>
-	);
-}
-
-function RiskManagementSection() {
-	const icons = [
-		<ListChecks className="w-4 h-4 mr-1" key="assessment" />,
-		<FileCheck2 className="w-4 h-4 mr-1" key="remediation" />,
-		<FileText className="w-4 h-4 mr-1" key="evidence" />,
-		<Globe className="w-4 h-4 mr-1" key="domains" />,
-		<FolderKanban className="w-4 h-4 mr-1" key="questionnaires" />,
-	];
-	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className="flex items-center gap-2">
-					<ShieldCheck className="w-5 h-5 text-green-600" /> Risk
-					Management
-				</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-					{riskManagement.map((item, idx) => (
-						<Card key={idx} className="">
-							<CardContent className="">
-								<div className="font-medium mb-2 flex items-center gap-1">
-									{icons[idx]} {item.title}
-								</div>
-								{item.status && (
-									<Badge variant="outline">
-										{item.status}
-									</Badge>
-								)}
-								{item.complete !== undefined && (
-									<div className="mt-2 text-sm text-muted-foreground">
-										{item.complete} complete,{" "}
-										{item.inProgress} in progress
-									</div>
-								)}
-								{item.active !== undefined && (
-									<div className="mt-2 text-sm text-muted-foreground">
-										{item.active} active
-									</div>
-								)}
-								{item.uploaded !== undefined && (
-									<div className="mt-2 text-sm text-muted-foreground">
-										{item.uploaded} uploaded, {item.shared}{" "}
-										shared, {item.requested} requested
-									</div>
-								)}
-								{item.complete !== undefined && (
-									<Progress value={item.complete} />
-								)}
-							</CardContent>
-						</Card>
-					))}
-				</div>
-			</CardContent>
-		</Card>
-	);
-}
-
-function CompanyProfile() {
-	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className="flex items-center gap-2">
-					<Building2 className="w-5 h-5 text-muted-foreground" />{" "}
-					Company Profile
-				</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<div>
-						<div className="mb-2 flex items-center gap-2">
-							<Building2 className="w-4 h-4" />
-							<span className="font-medium">Name:</span>{" "}
-							{customer.name}
-						</div>
-						<div className="mb-2 flex items-center gap-2">
-							<Globe className="w-4 h-4" />
-							<span className="font-medium">
-								Primary domain:
-							</span>{" "}
-							{customer.domain}
-						</div>
-						<div className="mb-2 flex items-center gap-2">
-							<FolderKanban className="w-4 h-4" />
-							<span className="font-medium">Industry:</span>{" "}
-							{customer.industry}
-						</div>
-						<div className="mb-2 flex items-center gap-2">
-							<ShieldCheck className="w-4 h-4" />
-							<span className="font-medium">
-								Overall security rating:
-							</span>{" "}
-							<Badge variant="outline">
-								{customer.ratingGrade} {customer.rating}
-							</Badge>
-						</div>
-					</div>
-					<div>
-						<div className="mb-2 flex items-center gap-2">
-							<Users className="w-4 h-4" />
-							<span className="font-medium">Employees:</span>{" "}
-							{customer.employees}
-						</div>
-						<div className="mb-2 flex items-center gap-2">
-							<MapPin className="w-4 h-4" />
-							<span className="font-medium">
-								Headquarters:
-							</span>{" "}
-							{customer.headquarters}
-						</div>
-						<div className="mb-2 flex items-center gap-2">
-							<FileText className="w-4 h-4" />
-							<span className="font-medium">
-								Contract end date:
-							</span>{" "}
-							-
-						</div>
-						<div className="mb-2 flex items-center gap-2">
-							<ListChecks className="w-4 h-4" />
-							<span className="font-medium">
-								Internal owner:
-							</span>{" "}
-							-
-						</div>
-					</div>
-				</div>
-			</CardContent>
-		</Card>
-	);
-}
-
-function SubsidiariesTable() {
-	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className="flex items-center gap-2">
-					<Building2 className="w-5 h-5 text-muted-foreground" />{" "}
-					Subsidiaries
-				</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<div className="overflow-x-auto">
-					<table className="min-w-full text-sm">
-						<thead>
-							<tr className="text-muted-foreground">
-								<th className="text-left py-2 px-4 flex items-center gap-1">
-									<Building2 className="w-4 h-4" /> Customer
-								</th>
-								<th className="text-left py-2 px-4">
-									<Globe className="w-4 h-4 inline" /> Website
-								</th>
-								<th className="text-left py-2 px-4">
-									<ShieldCheck className="w-4 h-4 inline" />{" "}
-									Score
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							{subsidiaries.map((sub) => (
-								<tr
-									key={sub.name}
-									className="border-b last:border-0"
-								>
-									<td className="py-2 px-4 flex items-center gap-1">
-										<Building2 className="w-4 h-4 text-muted-foreground" />
-										{sub.name}
-									</td>
-									<td className="py-2 px-4">{sub.website}</td>
-									<td className="py-2 px-4">
-										<Badge
-											variant="outline"
-											className={
-												sub.grade === "C"
-													? "border-yellow-500 text-yellow-600"
-													: "border-green-500 text-green-600"
-											}
-										>
-											{sub.grade} {sub.score}
-										</Badge>
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
-			</CardContent>
-		</Card>
-	);
-}
-
-function RiskCharts() {
-	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className="flex items-center gap-2">
-					<PieChartIcon className="w-5 h-5 text-blue-500" /> Risk
-					Ratings Overview
-				</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-					{pieData.map((data) => (
-						<ChartContainer
-							key={data.name}
-							config={{
-								value: { label: data.name, color: data.color },
-							}}
-							className="min-h-[200px] w-full"
-						>
-							<PieChart width={200} height={200}>
-								<ChartTooltip
-									content={<ChartTooltipContent />}
-								/>
-								<Pie
-									data={[data]}
-									dataKey="value"
-									nameKey="name"
-									cx="50%"
-									cy="50%"
-									innerRadius={60}
-									outerRadius={80}
-									fill={data.color}
-									label
-								>
-									<Cell
-										key={`cell-${data.name}`}
-										fill={data.color}
-									/>
-								</Pie>
-							</PieChart>
-						</ChartContainer>
-					))}
-				</div>
-			</CardContent>
-		</Card>
-	);
-}
 
 export default function CustomerSummary() {
+	// Filter sidebar state
+	const [openFilterSidebar, setOpenFilterSidebar] = React.useState(false);
+	const [labelMatchType, setLabelMatchType] = React.useState("any");
+	const [labelSearch, setLabelSearch] = React.useState("");
+	// Export dialog state
+	const [openExportDialog, setOpenExportDialog] = React.useState(false);
+	const [exportFormat, setExportFormat] = React.useState<"pdf" | "excel">(
+		"pdf"
+	);
+	const [exportFrequency, setExportFrequency] = React.useState<
+		"once" | "recurring"
+	>("once");
+	const [exportDelivery, setExportDelivery] = React.useState<
+		"email" | "save"
+	>("email");
+
 	return (
 		<SidebarLayout
 			breadcrumbs={[
@@ -422,12 +335,144 @@ export default function CustomerSummary() {
 			]}
 		>
 			<div className="space-y-4">
-				<CustomerHeader />
+				<PageHeader
+					title={
+						<div>
+							<h2 className="text-2xl font-bold flex items-center gap-2">
+								<Building2 className="w-6 h-6 text-muted-foreground" />{" "}
+								Customer Summary
+							</h2>
+							<div className="flex items-center gap-2">
+								<Avatar>
+									<AvatarFallback>
+										{customer.name[0]}
+									</AvatarFallback>
+								</Avatar>
+								<span className="text-md flex items-center gap-2">
+									<Building2 className="w-5 h-5 text-muted-foreground" />
+									{customer.name}
+									<Link
+										to={"#"}
+										className="text-xs flex items-center gap-1 hover:underline text-blue-500"
+									>
+										<Globe className="w-3 h-3" />{" "}
+										{customer.domain}
+									</Link>
+								</span>
+							</div>
+						</div>
+					}
+					actions={
+						<>
+							<Button
+								variant="outline"
+								onClick={() => setOpenFilterSidebar(true)}
+							>
+								Apply Filter <Filter className="w-4 h-4" />
+							</Button>
+							<Button
+								variant="outline"
+								onClick={() => setOpenExportDialog(true)}
+							>
+								Export <Download className="w-4 h-4" />
+							</Button>
+						</>
+					}
+				/>
 				<RiskOverview />
-				<RiskManagementSection />
 				<CompanyProfile />
 				<SubsidiariesTable />
-				<RiskCharts />
+				<RiskManagementSection />
+				{sectionData.map((section) => (
+					<SectionCard key={section.title} section={section} />
+				))}
+
+				{/* Filter Sidebar */}
+				<DrawerSheet
+					open={openFilterSidebar}
+					onOpenChange={setOpenFilterSidebar}
+					className="w-[350px] sm:min-w-[400px]"
+					side="right"
+					title="Filter by"
+				>
+					<div className="space-y-8">
+						{/* Label Section */}
+						<div>
+							<div className="font-semibold mb-2">Label</div>
+							<div className="space-y-2 mb-2">
+								<div className="flex items-center gap-2">
+									<RadioGroup
+										value={labelMatchType}
+										onValueChange={setLabelMatchType}
+										className="flex flex-col gap-1"
+									>
+										<label className="flex items-center gap-2 text-sm">
+											<RadioGroupItem
+												value="any"
+												id="label-any"
+											/>{" "}
+											Match any
+										</label>
+										<label className="flex items-center gap-2 text-sm">
+											<RadioGroupItem
+												value="all"
+												id="label-all"
+											/>{" "}
+											Match all
+										</label>
+										<label className="flex items-center gap-2 text-sm">
+											<RadioGroupItem
+												value="exclude"
+												id="label-exclude"
+											/>{" "}
+											Do not include
+										</label>
+									</RadioGroup>
+								</div>
+								<input
+									type="text"
+									placeholder="Type to search labels"
+									className="w-full mt-2"
+									value={labelSearch}
+									onChange={(e) =>
+										setLabelSearch(e.target.value)
+									}
+								/>
+							</div>
+						</div>
+					</div>
+					{/* Footer Buttons */}
+					<div className="flex justify-between gap-2 mt-8">
+						<Button
+							variant="outline"
+							className="flex-1"
+							onClick={() => {
+								setLabelMatchType("any");
+								setLabelSearch("");
+							}}
+						>
+							Reset
+						</Button>
+						<Button
+							className="flex-1"
+							onClick={() => setOpenFilterSidebar(false)}
+						>
+							Apply
+						</Button>
+					</div>
+				</DrawerSheet>
+
+				{/* Export Dialog */}
+				<ExportDialog
+					open={openExportDialog}
+					onOpenChange={setOpenExportDialog}
+					exportFormat={exportFormat}
+					setExportFormat={setExportFormat}
+					exportFrequency={exportFrequency}
+					setExportFrequency={setExportFrequency}
+					exportDelivery={exportDelivery}
+					setExportDelivery={setExportDelivery}
+				/>
 			</div>
 		</SidebarLayout>
 	);

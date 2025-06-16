@@ -63,7 +63,7 @@ const data = {
 		},
 		{
 			title: "Risk Assessments",
-			url: "#",
+			url: "/risk-assessments",
 			icon: BookOpen,
 		},
 		{

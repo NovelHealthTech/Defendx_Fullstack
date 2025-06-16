@@ -32,6 +32,9 @@ const CustomerViewSecurityQuestionnaire = lazy(
 		)
 );
 const RiskProfile = lazy(() => import("./pages/RiskProfile.tsx"));
+const RiskAssessments = lazy(
+	() => import("./pages/RiskAssessments/RiskAssessments.tsx")
+);
 
 export const routes = [
 	{
@@ -93,5 +96,9 @@ export const routes = [
 	{
 		path: "/security-questionnaires/customer-view/:id",
 		element: <CustomerViewSecurityQuestionnaire />,
+	},
+	{
+		path: "/risk-assessments",
+		element: <RiskAssessments />,
 	},
 ];
