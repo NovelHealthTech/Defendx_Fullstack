@@ -35,6 +35,12 @@ const RiskProfile = lazy(() => import("./pages/RiskProfile.tsx"));
 const RiskAssessments = lazy(
 	() => import("./pages/RiskAssessments/RiskAssessments.tsx")
 );
+const CreateRiskAssessment = lazy(
+	() => import("./pages/RiskAssessments/CreateRiskAssessment.tsx")
+);
+const EditRiskAssessment = lazy(
+	() => import("./pages/RiskAssessments/EditRiskAssessment.tsx")
+);
 
 export const routes = [
 	{
@@ -100,5 +106,13 @@ export const routes = [
 	{
 		path: "/risk-assessments",
 		element: <RiskAssessments />,
+	},
+	{
+		path: "/risk-assessments/create",
+		element: <CreateRiskAssessment />,
+	},
+	{
+		path: "/risk-assessments/:id/edit",
+		element: <EditRiskAssessment />,
 	},
 ];

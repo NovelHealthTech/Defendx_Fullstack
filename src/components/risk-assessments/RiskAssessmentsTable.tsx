@@ -3,7 +3,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { ChevronRight, Filter, MoreVertical, Search } from "lucide-react";
+import { ChevronRight, Filter, Search } from "lucide-react";
+import { Link } from "react-router";
 
 const dummyData = [
 	{
@@ -23,6 +24,7 @@ const dummyData = [
 				color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
 			},
 		],
+		id: 1,
 	},
 ];
 
@@ -85,42 +87,62 @@ export default function RiskAssessmentsTable({
 					</thead>
 					<tbody>
 						{dummyData.map((row, i) => (
-							<tr key={i} className="border-b last:border-0">
-								<td className="py-2 px-4">
-									<div className="font-medium">
-										{row.name}
-									</div>
-									<div className="text-xs text-muted-foreground">
-										{row.version}
-									</div>
-								</td>
-								<td className="py-2 px-4">{row.scope}</td>
-								<td className="py-2 px-4">
-									<span className="inline-flex items-center justify-center rounded-full bg-muted w-7 h-7 text-xs font-semibold">
-										{row.author}
-									</span>
-								</td>
-								<td className="py-2 px-4">{row.published}</td>
-								<td className="py-2 px-4">
-									{row.reassessment}
-								</td>
-								<td className="py-2 px-4">
-									<div className="flex flex-wrap gap-1">
-										{row.status.map((s, idx) => (
-											<span
-												key={idx}
-												className={`rounded-full px-2 py-0.5 text-xs font-medium ${s.color}`}
+							<tr
+								key={i}
+								className="border-b last:border-0 hover:bg-muted/30 transition"
+							>
+								<Link
+									to={`/risk-assessments/${row.id}/edit`}
+									className="contents"
+								>
+									<td className="py-2 px-4 cursor-pointer">
+										<div className="font-medium">
+											{row.name}
+										</div>
+										<div className="text-xs text-muted-foreground">
+											{row.version}
+										</div>
+									</td>
+									<td className="py-2 px-4 cursor-pointer">
+										{row.scope}
+									</td>
+									<td className="py-2 px-4 cursor-pointer">
+										<span className="inline-flex items-center justify-center rounded-full bg-muted w-7 h-7 text-xs font-semibold">
+											{row.author}
+										</span>
+									</td>
+									<td className="py-2 px-4 cursor-pointer">
+										{row.published}
+									</td>
+									<td className="py-2 px-4 cursor-pointer">
+										{row.reassessment}
+									</td>
+									<td className="py-2 px-4 cursor-pointer">
+										<div className="flex flex-wrap gap-1">
+											{row.status.map((s, idx) => (
+												<span
+													key={idx}
+													className={`rounded-full px-2 py-0.5 text-xs font-medium ${s.color}`}
+												>
+													{s.label}
+												</span>
+											))}
+										</div>
+									</td>
+									<td className="py-2 px-4 text-right cursor-pointer">
+										<Button
+											variant="ghost"
+											size="icon"
+											asChild
+										>
+											<Link
+												to={`/risk-assessments/${row.id}/edit`}
 											>
-												{s.label}
-											</span>
-										))}
-									</div>
-								</td>
-								<td className="py-2 px-4 text-right">
-									<Button variant="ghost" size="icon">
-										<ChevronRight className="w-5 h-5" />
-									</Button>
-								</td>
+												<ChevronRight className="w-5 h-5" />
+											</Link>
+										</Button>
+									</td>
+								</Link>
 							</tr>
 						))}
 					</tbody>
