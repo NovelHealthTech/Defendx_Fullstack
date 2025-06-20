@@ -16,18 +16,22 @@ import {
 	ClipboardList,
 	ArrowRight,
 	Send,
-	X,
-	Plus,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const steps = [
 	{ label: "Select type", icon: <ClipboardList className="w-4 h-4" /> },
 	{ label: "Select schedule", icon: <CalendarDays className="w-4 h-4" /> },
-	{ label: "Assign recipients", icon: <Users className="w-4 h-4" /> },
+	{ label: "Assign recipient", icon: <Users className="w-4 h-4" /> },
 	{ label: "Title & message", icon: <MessageCircle className="w-4 h-4" /> },
 	{ label: "Review & send", icon: <Eye className="w-4 h-4" /> },
 ];
+
+function getToday() {
+	return new Date().toISOString().split("T")[0];
+}
 
 function Stepper({
 	step,
@@ -42,21 +46,19 @@ function Stepper({
 				<button
 					key={i}
 					type="button"
-					className={`flex items-center gap-2 focus:outline-none ${
-						i === step
+					className={`flex items-center gap-2 focus:outline-none ${i === step
 							? "text-blue-600 font-bold"
 							: i < step
-							? "text-blue-600"
-							: "text-muted-foreground"
-					} ${i === step ? "underline" : ""}`}
+								? "text-blue-600"
+								: "text-muted-foreground"
+						} ${i === step ? "underline" : ""}`}
 					onClick={() => onStep(i)}
 				>
 					<div
-						className={`rounded-full w-7 h-7 flex items-center justify-center border ${
-							i <= step
+						className={`rounded-full w-7 h-7 flex items-center justify-center border ${i <= step
 								? "bg-blue-600 text-white border-blue-600"
 								: "bg-card border-muted"
-						}`}
+							}`}
 					>
 						{s.icon}
 					</div>
@@ -72,39 +74,96 @@ function Stepper({
 	);
 }
 
+interface QuestionnaireType {
+	questionnaire_type_id: number;
+	questionnaire_type_name: string;
+	description?: string;
+}
+
 export default function CreateSecurityQuestionnaire() {
+	const navigate = useNavigate();
 	const [step, setStep] = useState(0);
-	const [selectedType, setSelectedType] = useState("pci");
-	const [riskVisibility, setRiskVisibility] = useState(
-		"Show all risk information"
-	);
-	const [dueDate, setDueDate] = useState("2025-06-20");
+	const [questionnaireTypes, setQuestionnaireTypes] = useState<QuestionnaireType[]>([]);
+	const [selectedType, setSelectedType] = useState<number | "">("");
+	const [riskVisibility, setRiskVisibility] = useState("ShowAllRiskInformation");
+	const [dueDate, setDueDate] = useState("");
 	const [reminderEnabled, setReminderEnabled] = useState(true);
-	const [reminderDate, setReminderDate] = useState("2025-06-13");
+	const [reminderDate, setReminderDate] = useState("");
 	const [resendEnabled, setResendEnabled] = useState(false);
+	// Only one recipient, always checked, editable, required
 	const [recipients, setRecipients] = useState([
-		{ name: "John Doe", email: "john.doe@example.com", selected: true },
-		{
-			name: "Jane Smith",
-			email: "jane.smith@example.com",
-			selected: false,
-		},
+		{ name: "", email: "", selected: true }
 	]);
-	const [newRecipientName, setNewRecipientName] = useState("");
-	const [newRecipientEmail, setNewRecipientEmail] = useState("");
-	const [title, setTitle] = useState("PCI DSS v4 - SAQ C-VT");
-	const [message, setMessage] = useState(
+	const [title, setTitle] = useState("");
+	const [message] = useState(
 		"Please complete this security questionnaire. If you are not the right person to complete a questionnaire, don't worry. You'll be able to invite your colleague to answer the questionnaire from within the UpGuard platform."
 	);
+	const [loadingTypes, setLoadingTypes] = useState(true);
+	const [errorTypes, setErrorTypes] = useState<string | null>(null);
+	const [sending, setSending] = useState(false);
 
-	const questionnaireTypes = [
-		{
-			value: "pci",
-			label: "PCI DSS v4 - SAQ C-VT",
-			description:
-				"Evaluate an organization's alignment with PCI DSS v4 requirements specific to SAQ C-VT, which applies to merchants using web-based virtual payment terminals on dedicated, isolated workstations. This questionnaire is designed for businesses processing transactions via a browser-based interface provided by a PCI DSS-compliant third party, without local storage of cardholder data.",
-		},
-	];
+	const today = getToday();
+
+	useEffect(() => {
+		const fetchTypes = async () => {
+			setLoadingTypes(true);
+			setErrorTypes(null);
+			try {
+				const token = localStorage.getItem("token");
+				const response = await axios.post(
+					"https://cyber.defendx.co.in/api/upguard/question-types",
+					{},
+					{
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `Bearer ${token}`,
+						},
+					}
+				);
+				setQuestionnaireTypes(response.data.data || []);
+				if (response.data.data && response.data.data.length > 0) {
+					setSelectedType(response.data.data[0].questionnaire_type_id);
+					setTitle(response.data.data[0].questionnaire_type_name);
+				}
+			} catch (err) {
+				setErrorTypes("Failed to fetch questionnaire types.");
+			} finally {
+				setLoadingTypes(false);
+			}
+		};
+		fetchTypes();
+	}, []);
+
+	// Send questionnaire API call
+	const handleSendQuestionnaire = async () => {
+		setSending(true);
+		try {
+			const token = localStorage.getItem("token");
+			const payload = {
+				due_date: dueDate,
+				questionnaire_type_id: selectedType,
+				recipient_email: recipients[0]?.email,
+				risk_information_visiblity: riskVisibility,
+				vendor_id: parseInt(localStorage.getItem("customerId") || "0", 10)
+			};
+			await axios.post(
+				"https://cyber.defendx.co.in/api/upguard/send-vendor-questionnaires",
+				payload,
+				{
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${token}`,
+					},
+				}
+			);
+			// On success, redirect
+			navigate("/security-questionnaires");
+		} catch (error: any) {
+			alert("Failed to send questionnaire.");
+		} finally {
+			setSending(false);
+		}
+	};
 
 	// Step content
 	let content = null;
@@ -121,28 +180,60 @@ export default function CreateSecurityQuestionnaire() {
 						manage, and create questionnaire types via the
 						questionnaire library.
 					</div>
-					<select
-						className="w-full border rounded px-3 py-2 dark:bg-zinc-900"
-						value={selectedType}
-						onChange={(e) => setSelectedType(e.target.value)}
-					>
-						{questionnaireTypes.map((q) => (
-							<option key={q.value} value={q.value}>
-								{q.label}
-							</option>
-						))}
-					</select>
-					<div className="bg-muted/50 rounded p-3 mt-3">
-						<div className="font-medium flex items-center gap-2">
-							{questionnaireTypes[0].label}{" "}
-							<span className="text-xs text-blue-600">
-								Preview
-							</span>
-						</div>
-						<div className="text-xs text-muted-foreground mt-1">
-							{questionnaireTypes[0].description}
-						</div>
-					</div>
+					{loadingTypes ? (
+						<div>Loading...</div>
+					) : errorTypes ? (
+						<div className="text-red-600">{errorTypes}</div>
+					) : (
+						<>
+							<select
+								className="w-full border rounded px-3 py-2 dark:bg-zinc-900"
+								value={selectedType}
+								onChange={(e) => {
+									setSelectedType(Number(e.target.value));
+									const found = questionnaireTypes.find(
+										(q) =>
+											q.questionnaire_type_id ===
+											Number(e.target.value)
+									);
+									if (found) setTitle(found.questionnaire_type_name);
+								}}
+							>
+								<option value="">Select a questionnaire type...</option>
+								{questionnaireTypes.map((q) => (
+									<option
+										key={q.questionnaire_type_id}
+										value={q.questionnaire_type_id}
+									>
+										{q.questionnaire_type_name}
+									</option>
+								))}
+							</select>
+							<div className="bg-muted/50 rounded p-3 mt-3">
+								<div className="font-medium flex items-center gap-2">
+									{
+										questionnaireTypes.find(
+											(q) =>
+												q.questionnaire_type_id ===
+												selectedType
+										)?.questionnaire_type_name
+									}{" "}
+									<span className="text-xs text-blue-600">
+										Preview
+									</span>
+								</div>
+								<div className="text-xs text-muted-foreground mt-1">
+									{
+										questionnaireTypes.find(
+											(q) =>
+												q.questionnaire_type_id ===
+												selectedType
+										)?.description
+									}
+								</div>
+							</div>
+						</>
+					)}
 				</div>
 				<div>
 					<div className="font-semibold mb-2 flex items-center gap-2">
@@ -154,8 +245,15 @@ export default function CreateSecurityQuestionnaire() {
 						value={riskVisibility}
 						onChange={(e) => setRiskVisibility(e.target.value)}
 					>
-						<option>Show all risk information</option>
-						<option>Hide all risk information</option>
+						<option value="ShowAllRiskInformation">
+							Show all risk information
+						</option>
+						<option value="HideAllRiskInformation">
+							Hide all risk information
+						</option>
+						<option value="HideSeverity">
+							Hide severity
+						</option>
 					</select>
 				</div>
 			</div>
@@ -166,7 +264,7 @@ export default function CreateSecurityQuestionnaire() {
 				<div>
 					<div className="font-semibold mb-2 flex items-center gap-2">
 						<CalendarDays className="w-4 h-4" />
-						Select schedule
+						Set a due date
 					</div>
 					<div className="text-xs text-muted-foreground mb-2">
 						Let the vendor know when the questionnaire should be
@@ -185,6 +283,7 @@ export default function CreateSecurityQuestionnaire() {
 							value={dueDate}
 							onChange={(e) => setDueDate(e.target.value)}
 							className="mt-1"
+							min={today}
 						/>
 					</div>
 					<div>
@@ -201,16 +300,8 @@ export default function CreateSecurityQuestionnaire() {
 							onChange={(e) => setReminderDate(e.target.value)}
 							className="mt-1"
 							disabled={!reminderEnabled}
+							min={today}
 						/>
-					</div>
-					<div>
-						<label className="flex items-center gap-2 text-xs font-medium">
-							<Checkbox
-								checked={resendEnabled}
-								onCheckedChange={(v) => setResendEnabled(!!v)}
-							/>
-							Resend questionnaire
-						</label>
 					</div>
 				</div>
 			</div>
@@ -221,92 +312,45 @@ export default function CreateSecurityQuestionnaire() {
 				<div>
 					<div className="font-semibold mb-2 flex items-center gap-2">
 						<Users className="w-4 h-4" />
-						Assign recipients
+						Assign recipient
 					</div>
 					<div className="text-xs text-muted-foreground mb-2">
-						Select at least one recipient for this questionnaire.
+						Enter the recipient for this questionnaire. You must add one recipient to proceed.
 					</div>
 				</div>
 				<div className="bg-muted/50 rounded p-4">
 					<div className="font-semibold text-xs mb-2">
-						Choose recipients
+						Recipient details
 					</div>
 					<div className="flex flex-col gap-2">
-						{recipients.map((r, i) => (
-							<div
-								key={r.email}
-								className="flex items-center gap-2"
-							>
-								<Checkbox
-									checked={r.selected}
-									onCheckedChange={(v) =>
-										setRecipients((recipients) =>
-											recipients.map((rec, idx) =>
-												idx === i
-													? { ...rec, selected: !!v }
-													: rec
-											)
-										)
-									}
-								/>
-								<span className="font-medium">{r.name}</span>
-								<span className="text-xs text-muted-foreground">
-									{r.email}
-								</span>
-								<Button
-									variant="ghost"
-									size="icon"
-									aria-label="Remove recipient"
-									onClick={() =>
-										setRecipients((recipients) =>
-											recipients.filter(
-												(_, idx) => idx !== i
-											)
-										)
-									}
-								>
-									<X className="w-4 h-4" />
-								</Button>
-							</div>
-						))}
-						<div className="flex gap-2 mt-2">
+						<div className="flex items-center gap-2">
+							<Checkbox checked readOnly />
 							<Input
 								placeholder="Name"
-								value={newRecipientName}
-								onChange={(e) =>
-									setNewRecipientName(e.target.value)
-								}
+								value={recipients[0]?.name || ""}
+								onChange={e => {
+									const val = e.target.value;
+									setRecipients(r =>
+										r.length === 0
+											? [{ name: val, email: "", selected: true }]
+											: [{ ...r[0], name: val, selected: true }]
+									);
+								}}
 								className="w-32"
 							/>
 							<Input
 								placeholder="Email"
-								value={newRecipientEmail}
-								onChange={(e) =>
-									setNewRecipientEmail(e.target.value)
-								}
+								value={recipients[0]?.email || ""}
+								onChange={e => {
+									const val = e.target.value;
+									setRecipients(r =>
+										r.length === 0
+											? [{ name: "", email: val, selected: true }]
+											: [{ ...r[0], email: val, selected: true }]
+									);
+								}}
 								className="w-48"
 							/>
-							<Button
-								variant="outline"
-								size="icon"
-								aria-label="Add recipient"
-								onClick={() => {
-									if (newRecipientName && newRecipientEmail) {
-										setRecipients((recipients) => [
-											...recipients,
-											{
-												name: newRecipientName,
-												email: newRecipientEmail,
-												selected: false,
-											},
-										]);
-										setNewRecipientName("");
-										setNewRecipientEmail("");
-									}
-								}}
-							>
-								<Plus className="w-4 h-4" />
-							</Button>
 						</div>
 					</div>
 				</div>
@@ -342,8 +386,8 @@ export default function CreateSecurityQuestionnaire() {
 						</label>
 						<Textarea
 							value={message}
-							onChange={(e) => setMessage(e.target.value)}
-							className="mt-1 min-h-[100px]"
+							readOnly
+							className="mt-1 min-h-[100px] bg-gray-100 dark:bg-zinc-800 cursor-not-allowed"
 						/>
 						<div className="text-xs text-muted-foreground mt-2">
 							The variable{" "}
@@ -378,8 +422,10 @@ export default function CreateSecurityQuestionnaire() {
 								<td className="py-2">
 									{
 										questionnaireTypes.find(
-											(q) => q.value === selectedType
-										)?.label
+											(q) =>
+												q.questionnaire_type_id ===
+												selectedType
+										)?.questionnaire_type_name
 									}
 								</td>
 							</tr>
@@ -405,31 +451,12 @@ export default function CreateSecurityQuestionnaire() {
 							</tr>
 							<tr>
 								<td className="py-2 pr-4 font-medium">
-									Recipients
+									Recipient
 								</td>
 								<td className="py-2">
-									<div className="flex flex-col md:flex-row gap-2">
-										<div>
-											<div className="text-xs text-muted-foreground">
-												Customers
-											</div>
-											<div>Acme Corp</div>
-										</div>
-										<div>
-											<div className="text-xs text-muted-foreground">
-												Recipient(s)
-											</div>
-											<div>
-												{recipients
-													.filter((r) => r.selected)
-													.map(
-														(r) =>
-															`${r.name} (${r.email})`
-													)
-													.join(", ") || "—"}
-											</div>
-										</div>
-									</div>
+									{recipients[0]?.name && recipients[0]?.email
+										? `${recipients[0].name} (${recipients[0].email})`
+										: "—"}
 								</td>
 							</tr>
 							<tr>
@@ -448,6 +475,15 @@ export default function CreateSecurityQuestionnaire() {
 			</div>
 		);
 	}
+
+	// Validation for disabling Next button
+	const disableNext =
+		(step === 0 && !selectedType) ||
+		(step === 1 && (!dueDate || new Date(dueDate) < new Date(today))) ||
+		(step === 2 &&
+			(!recipients[0]?.name?.trim() ||
+				!recipients[0]?.email?.trim())
+		);
 
 	return (
 		<SidebarLayout
@@ -486,25 +522,28 @@ export default function CreateSecurityQuestionnaire() {
 						<Button variant="ghost" className="w-full sm:w-auto">
 							Cancel
 						</Button>
-						<Button
-							onClick={() =>
-								setStep((s) =>
-									Math.min(s + 1, steps.length - 1)
-								)
-							}
-							className="w-full sm:w-auto"
-						>
-							{step === steps.length - 1 ? (
-								<>
-									<Send className="w-4 h-4 mr-1" />
-									Send questionnaire
-								</>
-							) : (
-								<>
-									Next <ArrowRight className="w-4 h-4 ml-1" />
-								</>
-							)}
-						</Button>
+						{step === steps.length - 1 ? (
+							<Button
+								onClick={handleSendQuestionnaire}
+								className="w-full sm:w-auto"
+								disabled={disableNext || sending}
+							>
+								<Send className="w-4 h-4 mr-1" />
+								{sending ? "Sending..." : "Send questionnaire"}
+							</Button>
+						) : (
+							<Button
+								onClick={() =>
+									setStep((s) =>
+										Math.min(s + 1, steps.length - 1)
+									)
+								}
+								className="w-full sm:w-auto"
+								disabled={disableNext}
+							>
+								Next <ArrowRight className="w-4 h-4 ml-1" />
+							</Button>
+						)}
 					</div>
 				</div>
 			</div>
