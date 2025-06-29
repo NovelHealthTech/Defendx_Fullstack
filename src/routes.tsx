@@ -42,6 +42,9 @@ const EditRiskAssessment = lazy(
 	() => import("./pages/RiskAssessments/EditRiskAssessment.tsx")
 );
 
+const IPAddresses = lazy(() => import("./pages/IPAddresses/IPAddresses.tsx"));
+const Domains = lazy(() => import("./pages/Domains/Domains.tsx"));
+
 export const routes = [
 	{
 		path: "/",
@@ -114,5 +117,13 @@ export const routes = [
 	{
 		path: "/risk-assessments/:id/edit",
 		element: <EditRiskAssessment />,
+	},
+	{
+		path: "/ip-addresses",
+		element: <IPAddresses />,
+	},
+	{
+		path: "/domains",
+		element: <Domains />,
 	},
 ];

@@ -68,12 +68,12 @@ const data = {
 		},
 		{
 			title: "Domains",
-			url: "#",
+			url: "/domains",
 			icon: Globe,
 		},
 		{
 			title: "IP Addresses",
-			url: "#",
+			url: "/ip-addresses",
 			icon: Map,
 		},
 		{
