@@ -1,56 +1,50 @@
 import * as React from "react";
 import {
-	AudioWaveform,
-	BookOpen,
-	GalleryVerticalEnd,
-	Globe,
-	Map,
-	PieChart,
-	SquareTerminal,
-	User,
+  AudioWaveform,
+  BookOpen,
+  GalleryVerticalEnd,
+  Globe,
+  Map,
+  PieChart,
+  SquareTerminal,
+  User,
 } from "lucide-react";
 
-import { NavMain } from "@/components/nav-main";
+import { NavMain } from "@/components/nav-main"; // Your updated NavMain here
 import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
 import {
-	Sidebar,
-	SidebarContent,
-	SidebarFooter,
-	SidebarHeader,
-	SidebarRail,
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarRail,
 } from "@/components/ui/sidebar";
 
-// This is sample data.
 const data = {
-	user: {
-		name: "Super Admin",
-		email: "superadmin@example.com",
-		avatar: "/avatars/shadcn.jpg",
-	},
-	teams: [
-		{
-			name: "Acme Inc",
-			logo: GalleryVerticalEnd,
-			plan: "Enterprise",
-		},
-		{
-			name: "Acme Corp.",
-			logo: AudioWaveform,
-			plan: "Startup",
-		},
-	],
-	navMain: [
+  user: {
+    name: "Super Admin",
+    email: "superadmin@example.com",
+    avatar: "/avatars/shadcn.jpg",
+  },
+  teams: [
+    {
+      name: "DefendX",
+      logo: GalleryVerticalEnd,
+      plan: "Product By CyberDim",
+    },
+  ],
+  navMain: [
 		{
 			title: "Customer Portfolio",
 			url: "/customer-portfolio",
 			icon: SquareTerminal,
 		},
-		{
-			title: "Security Profile",
-			url: "/security-profile",
-			icon: SquareTerminal,
-		},
+		// {
+		// 	title: "Security Profile",
+		// 	url: "/security-profile",
+		// 	icon: SquareTerminal,
+		// },
 		{
 			title: "Customer Summary",
 			url: "/customer-summary",
@@ -135,39 +129,21 @@ const data = {
 		// 	],
 		// },
 	],
-	projects: [
-		// {
-		// 	name: "Design Engineering",
-		// 	url: "#",
-		// 	icon: Frame,
-		// },
-		// {
-		// 	name: "Sales & Marketing",
-		// 	url: "#",
-		// 	icon: PieChart,
-		// },
-		// {
-		// 	name: "Travel",
-		// 	url: "#",
-		// 	icon: Map,
-		// },
-	],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-	return (
-		<Sidebar collapsible="icon" {...props}>
-			<SidebarHeader>
-				<TeamSwitcher teams={data.teams} />
-			</SidebarHeader>
-			<SidebarContent>
-				<NavMain items={data.navMain} />
-				{/* <NavProjects projects={data.projects} /> */}
-			</SidebarContent>
-			<SidebarFooter>
-				<NavUser user={data.user} />
-			</SidebarFooter>
-			<SidebarRail />
-		</Sidebar>
-	);
+  return (
+    <Sidebar collapsible="icon" {...props}>
+      <SidebarHeader>
+        <TeamSwitcher teams={data.teams} />
+      </SidebarHeader>
+      <SidebarContent>
+        <NavMain items={data.navMain} />
+      </SidebarContent>
+      <SidebarFooter>
+        <NavUser user={data.user} />
+      </SidebarFooter>
+      <SidebarRail />
+    </Sidebar>
+  );
 }
