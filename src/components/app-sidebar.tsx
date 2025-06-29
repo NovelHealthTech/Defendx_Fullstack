@@ -40,11 +40,11 @@ const data = {
 			url: "/customer-portfolio",
 			icon: SquareTerminal,
 		},
-		{
-			title: "Security Profile",
-			url: "/security-profile",
-			icon: SquareTerminal,
-		},
+		// {
+		// 	title: "Security Profile",
+		// 	url: "/security-profile",
+		// 	icon: SquareTerminal,
+		// },
 		{
 			title: "Customer Summary",
 			url: "/customer-summary",
@@ -52,22 +52,22 @@ const data = {
 		},
 		{
 			title: "Risk Profile",
-			url: "#",
+			url: "/risk-profile",
 			icon: PieChart,
 		},
 		{
 			title: "Risk Assessments",
-			url: "#",
+			url: "/risk-assessments",
 			icon: BookOpen,
 		},
 		{
 			title: "Domains",
-			url: "#",
+			url: "/domains",
 			icon: Globe,
 		},
 		{
 			title: "IP Addresses",
-			url: "#",
+			url: "/ip-addresses",
 			icon: Map,
 		},
 		{
