@@ -80,23 +80,14 @@ function EditorSection({
 									borderRadius: 8,
 									minHeight: 120,
 								},
-								className: darkMode
-									? "rsw-editor dark"
-									: "rsw-editor",
+								className: "rsw-editor",
 							}}
 						/>
 					) : (
 						<div
-							className={
-								"prose max-w-none min-h-[120px] " +
-								(darkMode
-									? "prose-invert text-white"
-									: "text-black")
-							}
+							className={"prose max-w-none min-h-[120px]"}
 							dangerouslySetInnerHTML={{
-								__html:
-									value ||
-									`<span class='text-muted-foreground'>${placeholder}</span>`,
+								__html: value || placeholder,
 							}}
 						/>
 					)}
@@ -123,16 +114,16 @@ export default function RiskAssessmentForm({
 
 	// WYSIWYG editor state
 	const [executiveSummary, setExecutiveSummary] = useState(
-		`<p>The risk assessment report on Adani Group's cybersecurity measures highlights several areas for improvement and documentation needs across various domains, including security policies, asset management, infrastructure, data protection, application security, risk management, and operational resilience. The report emphasizes the necessity of obtaining comprehensive documentation to fill information gaps and ensure a robust cybersecurity posture.</p>`
+		`The risk assessment report on Adani Group's cybersecurity measures highlights several areas for improvement and documentation needs across various domains, including security policies, asset management, infrastructure, data protection, application security, risk management, and operational resilience. The report emphasizes the necessity of obtaining comprehensive documentation to fill information gaps and ensure a robust cybersecurity posture.`
 	);
 	const [projectBackground, setProjectBackground] = useState(
-		`<p>This assessment was conducted as part of the annual review cycle for Adani Group, focusing on their digital infrastructure, third-party risk, and compliance with industry standards. The project aims to identify vulnerabilities and recommend actionable steps for risk mitigation.</p>`
+		`This assessment was conducted as part of the annual review cycle for Adani Group, focusing on their digital infrastructure, third-party risk, and compliance with industry standards. The project aims to identify vulnerabilities and recommend actionable steps for risk mitigation.`
 	);
 	const [assessmentSummary, setAssessmentSummary] = useState(
 		`<ul><li>Overall risk score: <b>794/1000</b></li><li>Risk level: <b>Medium</b></li><li>Key risks identified in open service ports, SSL certificate management, and patch management policies.</li><li>Recommendations include enhanced documentation, regular vulnerability assessments, and improved incident response planning.</li></ul>`
 	);
 	const [conclusion, setConclusion] = useState(
-		`<p>In conclusion, while Adani Group demonstrates a proactive approach to cybersecurity, there are critical areas that require attention. Addressing the identified gaps and implementing the recommended controls will significantly enhance the organization's security posture and resilience against emerging threats.</p>`
+		`In conclusion, while Adani Group demonstrates a proactive approach to cybersecurity, there are critical areas that require attention. Addressing the identified gaps and implementing the recommended controls will significantly enhance the organization's security posture and resilience against emerging threats.`
 	);
 
 	// Dummy author info for now
