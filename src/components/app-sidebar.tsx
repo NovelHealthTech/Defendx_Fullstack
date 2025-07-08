@@ -1,40 +1,39 @@
 import * as React from "react";
 import {
-  AudioWaveform,
-  BookOpen,
-  GalleryVerticalEnd,
-  Globe,
-  Map,
-  PieChart,
-  SquareTerminal,
-  User,
+	BookOpen,
+	GalleryVerticalEnd,
+	Globe,
+	Map,
+	PieChart,
+	SquareTerminal,
+	User,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main"; // Your updated NavMain here
 import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarRail,
+	Sidebar,
+	SidebarContent,
+	SidebarFooter,
+	SidebarHeader,
+	SidebarRail,
 } from "@/components/ui/sidebar";
 
 const data = {
-  user: {
-    name: "Super Admin",
-    email: "superadmin@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  teams: [
-    {
-      name: "DefendX",
-      logo: GalleryVerticalEnd,
-      plan: "Product By CyberDim",
-    },
-  ],
-  navMain: [
+	user: {
+		name: "Super Admin",
+		email: "superadmin@example.com",
+		avatar: "/avatars/shadcn.jpg",
+	},
+	teams: [
+		{
+			name: "DefendX",
+			logo: GalleryVerticalEnd,
+			plan: "Product By CyberDim",
+		},
+	],
+	navMain: [
 		{
 			title: "Customer Portfolio",
 			url: "/customer-portfolio",
@@ -82,27 +81,27 @@ const data = {
 		},
 		{
 			title: "Additional Evidence",
-			url: "#",
+			url: "/additional-evidence",
 			icon: BookOpen,
 		},
 		{
 			title: "Vulnerabilities",
-			url: "#",
+			url: "/vulnerabilities",
 			icon: BookOpen,
 		},
 		{
 			title: "Fourth Parties",
-			url: "#",
+			url: "/fourth-parties",
 			icon: BookOpen,
 		},
 		{
 			title: "Modified Risks",
-			url: "#",
+			url: "/modified-risks",
 			icon: BookOpen,
 		},
 		{
 			title: "Remediation",
-			url: "#",
+			url: "/remediation",
 			icon: BookOpen,
 		},
 		// {
@@ -132,18 +131,18 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  return (
-    <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
-      </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={data.navMain} />
-      </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
-      <SidebarRail />
-    </Sidebar>
-  );
+	return (
+		<Sidebar collapsible="icon" {...props}>
+			<SidebarHeader>
+				<TeamSwitcher teams={data.teams} />
+			</SidebarHeader>
+			<SidebarContent>
+				<NavMain items={data.navMain} />
+			</SidebarContent>
+			<SidebarFooter>
+				<NavUser user={data.user} />
+			</SidebarFooter>
+			<SidebarRail />
+		</Sidebar>
+	);
 }

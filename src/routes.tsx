@@ -16,6 +16,7 @@ const isAuthenticated = () => {
 const Login = lazy(() => import("./pages/Login"));
 const SecurityProfile = lazy(() => import("./pages/SecurityProfile"));
 const UserSettings = lazy(() => import("./pages/UserSettings"));
+const SettingsUser = lazy(() => import("./pages/settings/UserSettings.tsx"));
 const CustomerSummary = lazy(() => import("./pages/CustomerSummary"));
 const CustomerPortfolio = lazy(() => import("./pages/CustomerPortfolio"));
 const QuestionnaireLibrary = lazy(
@@ -56,6 +57,31 @@ const EditRiskAssessment = lazy(
 
 const IPAddresses = lazy(() => import("./pages/IPAddresses/IPAddresses.tsx"));
 const Domains = lazy(() => import("./pages/Domains/Domains.tsx"));
+const AdditionalEvidence = lazy(
+	() => import("./pages/AdditionalEvidence/AdditionalEvidence.tsx")
+);
+const SwitchAccount = lazy(() => import("./pages/SwitchAccount.tsx"));
+const EditUser = lazy(() => import("./pages/settings/EditUser.tsx"));
+const Remediation = lazy(() => import("./pages/Remediation/Remediation.tsx"));
+const CreateRemediation = lazy(
+	() => import("./pages/Remediation/CreateRemediation.tsx")
+);
+const ModifiedRisks = lazy(
+	() => import("./pages/ModifiedRisks/ModifiedRisks.tsx")
+);
+const CreateRiskWaiver = lazy(
+	() => import("./pages/ModifiedRisks/CreateRiskWaiver.tsx")
+);
+
+const FourthParties = lazy(
+	() => import("./pages/FourthParties/FourthParties.tsx")
+);
+const AddFourthParty = lazy(
+	() => import("./pages/FourthParties/AddFourthParty.tsx")
+);
+const Vulnerabilities = lazy(
+	() => import("./pages/Vulnerabilities/Vulnerabilities.tsx")
+);
 
 const ProtectedRoute = () => {
 	return isAuthenticated() ? <Outlet /> : <Navigate to="/login" replace />;
@@ -239,5 +265,53 @@ export const routes = [
 	{
 		path: "/domains",
 		element: <Domains />,
+	},
+	{
+		path: "/additional-evidence",
+		element: <AdditionalEvidence />,
+	},
+	{
+		path: "/switch-account",
+		element: <SwitchAccount />,
+	},
+	{
+		path: "/settings/user",
+		element: <SettingsUser />,
+	},
+	{
+		path: "/settings/edit-user/:id",
+		element: <EditUser />,
+	},
+	{
+		path: "/modified-risks",
+		element: <ModifiedRisks />,
+	},
+	{
+		path: "/modified-risks/create-risk-waiver",
+		element: <CreateRiskWaiver />,
+	},
+	{
+		path: "/remediation",
+		element: <Remediation />,
+	},
+	{
+		path: "/remediation/create",
+		element: <CreateRemediation />,
+	},
+	{
+		path: "/fourth-parties",
+		element: <FourthParties />,
+	},
+	{
+		path: "/fourth-parties/add-fourth-party",
+		element: <AddFourthParty />,
+	},
+	{
+		path: "/fourth-parties/edit/:id",
+		element: <AddFourthParty />,
+	},
+	{
+		path: "/vulnerabilities",
+		element: <Vulnerabilities />,
 	},
 ];
