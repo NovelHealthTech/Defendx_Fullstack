@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import SidebarLayout from "@/layouts/sidebar-layout";
 import { Button } from "@/components/ui/button";
-import { Download, ExternalLink, Globe } from "lucide-react";
+import { Globe } from "lucide-react";
 
 import PageHeader from "@/components/PageHeader";
 import { Avatar } from "@/components/ui/avatar";
 import { AvatarFallback } from "@/components/ui/avatar";
 import { Link } from "react-router";
-import ExportDialog from "@/components/ExportDialog";
 import { Separator } from "@/components/ui/separator";
 
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -1003,18 +1002,7 @@ const Step3Review: React.FC<
 
 export default function CreateRemediation() {
 	const [currentStep, setCurrentStep] = useState(0);
-	const [openExportDialog, setOpenExportDialog] = React.useState(false);
-	const [exportFormat, setExportFormat] = React.useState<"pdf" | "excel">(
-		"pdf"
-	);
-	const [exportFrequency, setExportFrequency] = React.useState<
-		"once" | "recurring"
-	>("once");
-	const [exportDelivery, setExportDelivery] = React.useState<
-		"email" | "save"
-	>("email");
-
-	// Stepper state for all risks
+	// Remove openExportDialog, setOpenExportDialog, exportFormat, setExportFormat, exportFrequency, setExportFrequency, exportDelivery, setExportDelivery
 	const [riskStates, setRiskStates] = React.useState<RiskFormState[]>(
 		risksList.map(() => ({
 			selectedRadio: "selected",
@@ -1138,11 +1126,7 @@ export default function CreateRemediation() {
 }
 
 // Reusable Section Components
-function CustomerHeader({
-	onOpenExportDialog,
-}: {
-	onOpenExportDialog: () => void;
-}) {
+function CustomerHeader() {
 	return (
 		<>
 			<PageHeader

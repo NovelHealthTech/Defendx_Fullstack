@@ -68,8 +68,7 @@ export default function Domains() {
 	const [labelMatchType, setLabelMatchType] = useState("any");
 	const [labelSearch, setLabelSearch] = useState("");
 	const [findingSearch, setFindingSearch] = useState("");
-	const [selectedIp, setSelectedIp] = useState<IPAddress | null>(null);
-	const [activeTab, setActiveTab] = useState("total-domains");
+	const [selectedIp] = useState<IPAddress | null>(null);
 	const [selectedIpRange, setSelectedIpRange] = useState<IPRange | null>(
 		null
 	);
@@ -446,7 +445,7 @@ export default function Domains() {
 			<Tabs
 				defaultValue="total-domains"
 				className="w-full"
-				onValueChange={setActiveTab}
+				onValueChange={() => {}}
 			>
 				<TabsList className="mb-2 h-auto p-2 w-full">
 					<TabsTrigger

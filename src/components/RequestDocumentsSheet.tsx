@@ -238,7 +238,7 @@ const RequestDocumentsSheet = ({
 								Select documents
 							</h3>
 							<div className="space-y-4">
-								{documentRequests.map((request, index) => (
+								{documentRequests.map((request) => (
 									<div
 										key={request.id}
 										className="flex items-end gap-4 p-4 border rounded-md"
@@ -456,30 +456,30 @@ const RequestDocumentsSheet = ({
 									</CardHeader>
 									<CardContent>
 										<ul className="space-y-3">
-											{documentRequests.map(
-												(doc, index) => (
-													<li
-														key={doc.id}
-														className="flex items-center"
-													>
-														<span className="w-6 text-muted-foreground">
-															{index + 1}.
-														</span>
-														<span className="flex-grow">
-															{documentTypes.find(
-																(d) =>
-																	d.value ===
-																	doc.type
-															)?.label ||
-																doc.type}
-														</span>
-														<span className="text-sm text-muted-foreground">
-															{doc.priority}{" "}
-															Priority
-														</span>
-													</li>
-												)
-											)}
+											{documentRequests.map((doc) => (
+												<li
+													key={doc.id}
+													className="flex items-center"
+												>
+													<span className="w-6 text-muted-foreground">
+														{documentTypes.find(
+															(d) =>
+																d.value ===
+																doc.type
+														)?.label || doc.type}
+													</span>
+													<span className="flex-grow">
+														{documentTypes.find(
+															(d) =>
+																d.value ===
+																doc.type
+														)?.label || doc.type}
+													</span>
+													<span className="text-sm text-muted-foreground">
+														{doc.priority} Priority
+													</span>
+												</li>
+											))}
 										</ul>
 									</CardContent>
 								</Card>

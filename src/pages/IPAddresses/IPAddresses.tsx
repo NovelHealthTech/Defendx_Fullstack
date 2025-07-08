@@ -2,19 +2,12 @@ import React, { useState } from "react";
 import SidebarLayout from "@/layouts/sidebar-layout";
 import { Button } from "@/components/ui/button";
 import {
-	BadgePlus,
 	Download,
 	ExternalLink,
 	Filter,
 	Globe,
-	Plus,
 	Search,
 	Trash2,
-	ArrowUpRight,
-	ArrowDownRight,
-	ChevronDown,
-	Columns3,
-	Users,
 	ChevronRight,
 	ArrowRight,
 	ArrowDown,
@@ -23,8 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 import PageHeader from "@/components/PageHeader";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { CardTitle } from "@/components/ui/card";
 import { Link } from "react-router";
 import ExportDialog from "@/components/ExportDialog";
@@ -75,7 +67,6 @@ export default function IPAddresses() {
 	const [ipOwnerSearch, setIpOwnerSearch] = useState("");
 	const [asnSearch, setAsnSearch] = useState("");
 	const [ipCountrySearch, setIpCountrySearch] = useState("");
-	const [findingSearch, setFindingSearch] = useState("");
 	const [selectedIp, setSelectedIp] = useState<IPAddress | null>(null);
 	const [ipRangeSearch, setIpRangeSearch] = useState("");
 	const [ipRangeLabelMatchType, setIpRangeLabelMatchType] = useState("any");

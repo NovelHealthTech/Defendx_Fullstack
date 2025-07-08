@@ -18,7 +18,6 @@ export default function VulnerabilitiesDataTable({
 	columns: ColumnDef<any>[];
 	data: any[];
 	expanded: number | null;
-	setExpanded: (idx: number | null) => void;
 }) {
 	const [sorting, setSorting] = useState<any>([]);
 	const table = useReactTable({
@@ -73,7 +72,7 @@ export default function VulnerabilitiesDataTable({
 							{expanded === row.index && (
 								<TableRow className="bg-muted/30">
 									<TableCell
-										colSpan={columns.length + 1}
+										colSpan={columns.length}
 										className="p-4"
 									>
 										<div className="mb-2 text-sm text-muted-foreground whitespace-break-spaces">

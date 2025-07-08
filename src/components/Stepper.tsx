@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 interface StepProps {
 	title: string;
 	description?: string;
-	isCompleted?: boolean;
 	isActive?: boolean;
 	number?: number;
 	icon?: React.ReactNode;
@@ -20,7 +19,6 @@ interface StepProps {
 const Step: React.FC<StepProps> = ({
 	title,
 	description,
-	isCompleted,
 	isActive,
 	number,
 	icon,
@@ -52,10 +50,10 @@ const Step: React.FC<StepProps> = ({
 						status === "completed"
 							? "border-primary bg-primary text-primary-foreground"
 							: status === "error"
-								? "border-red-500 text-red-500"
-								: isActive
-									? "border-primary"
-									: "border-muted"
+							? "border-red-500 text-red-500"
+							: isActive
+							? "border-primary"
+							: "border-muted"
 					)}
 				>
 					{icon ? (
@@ -135,10 +133,6 @@ export function Stepper({
 			>
 				{steps.map((step, index) => {
 					const isActive = index === currentStep;
-					const isCompleted = step.status
-						? step.status === "completed"
-						: index < currentStep;
-					const isError = step.status === "error";
 					const clickable = clickableSteps
 						? index <= currentStep
 						: false;
@@ -147,7 +141,6 @@ export function Stepper({
 							<Step
 								title={step.title}
 								description={step.description}
-								isCompleted={isCompleted}
 								isActive={isActive}
 								number={index + 1}
 								icon={step.icon}

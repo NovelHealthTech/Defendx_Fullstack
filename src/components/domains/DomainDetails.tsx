@@ -1,12 +1,5 @@
 import React from "react";
-import {
-	AlertCircle,
-	ChevronRight,
-	Download,
-	Info,
-	RefreshCw,
-	X,
-} from "lucide-react";
+import { ChevronRight, Download, Info, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

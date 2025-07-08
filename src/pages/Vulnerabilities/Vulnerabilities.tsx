@@ -286,7 +286,6 @@ export default function Vulnerabilities() {
 					columns={vulnerabilitiesColumns}
 					data={vulnerabilitiesData}
 					expanded={expanded}
-					setExpanded={setExpanded}
 				/>
 			</div>
 		</SidebarLayout>

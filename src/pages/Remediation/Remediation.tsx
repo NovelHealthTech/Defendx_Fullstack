@@ -1,14 +1,7 @@
 import React, { useState } from "react";
 import SidebarLayout from "@/layouts/sidebar-layout";
 import { Button } from "@/components/ui/button";
-import {
-	Download,
-	ExternalLink,
-	Globe,
-	Info,
-	RotateCw,
-	Check,
-} from "lucide-react";
+import { Download, ExternalLink, Globe, Info } from "lucide-react";
 
 import PageHeader from "@/components/PageHeader";
 import { Avatar } from "@/components/ui/avatar";
@@ -17,7 +10,7 @@ import { CardTitle, Card, CardHeader } from "@/components/ui/card";
 import { Link } from "react-router";
 import ExportDialog from "@/components/ExportDialog";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { DataTable } from "@/components/DataTable";
 import type { ColumnDef } from "@tanstack/react-table";

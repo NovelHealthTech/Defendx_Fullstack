@@ -1,14 +1,7 @@
 import React, { useState } from "react";
 import SidebarLayout from "@/layouts/sidebar-layout";
 import { Button } from "@/components/ui/button";
-import {
-	Download,
-	ExternalLink,
-	Globe,
-	Info,
-	RotateCw,
-	Check,
-} from "lucide-react";
+import { Download, ExternalLink, Globe, Info } from "lucide-react";
 
 import PageHeader from "@/components/PageHeader";
 import { Avatar } from "@/components/ui/avatar";
@@ -41,7 +34,6 @@ export default function ModifiedRisks() {
 	const [exportDelivery, setExportDelivery] = React.useState<
 		"email" | "save"
 	>("email");
-	const [activeTab, setActiveTab] = useState("adjusted-risks");
 	const [showInfo, setShowInfo] = useState(true);
 	return (
 		<SidebarLayout
@@ -75,7 +67,7 @@ export default function ModifiedRisks() {
 			<Tabs
 				defaultValue="adjusted-risks"
 				className="w-full"
-				onValueChange={setActiveTab}
+				onValueChange={() => {}}
 			>
 				<TabsList className="mb-2 h-auto p-2 w-full">
 					<TabsTrigger

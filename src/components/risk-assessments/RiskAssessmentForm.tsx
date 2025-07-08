@@ -11,7 +11,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
-import { Info, Pencil, Eye } from "lucide-react";
+import { Pencil, Eye } from "lucide-react";
 import Editor from "react-simple-wysiwyg";
 import {
 	Table,

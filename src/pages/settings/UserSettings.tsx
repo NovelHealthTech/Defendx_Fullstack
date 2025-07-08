@@ -226,7 +226,11 @@ const UserSettings: React.FC = () => {
 											<td className="py-3 px-4">
 												<Badge
 													variant="outline"
-													className={`rounded-full ${user.role === "Admin" ? "bg-blue-50 text-blue-500 border-blue-500" : ""}`}
+													className={`rounded-full ${
+														user.role === "Admin"
+															? "bg-blue-50 text-blue-500 border-blue-500"
+															: ""
+													}`}
 												>
 													{user.role}
 												</Badge>
@@ -422,7 +426,7 @@ const ManageRolesDialog: React.FC<{
 					</DialogDescription>
 				</DialogHeader>
 				<div className="divide-y mt-4">
-					{roleList.map((role, idx) => (
+					{roleList.map((role) => (
 						<div
 							key={role.label}
 							className="flex items-center justify-between py-3"

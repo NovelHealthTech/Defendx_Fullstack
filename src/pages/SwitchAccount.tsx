@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from "react-router";
+import { useLocation } from "react-router";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -7,12 +7,8 @@ import {
 	CardHeader,
 } from "@/components/ui/card";
 import { CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { useMemo, useState } from "react";
 import SidebarLayout from "@/layouts/sidebar-layout";
-import { Avatar } from "@/components/ui/avatar";
-import { AvatarImage } from "@/components/ui/avatar";
-import { AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -24,14 +20,6 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 
-const mockAccounts = [
-	{ name: "Digit Insurance", email: "user@digitinsurance.com" },
-	{
-		name: "Zoom Insurance Brokers",
-		email: "rahul.n@zoominsurancebrokers.com",
-	},
-];
-
 function useQuery() {
 	const { search } = useLocation();
 	return useMemo(() => new URLSearchParams(search), [search]);
@@ -40,7 +28,6 @@ function useQuery() {
 export default function SwitchAccount() {
 	const query = useQuery();
 	const email = query.get("email");
-	const account = mockAccounts.find((a) => a.email === email);
 
 	const [name, setName] = useState("John Doe");
 	const [lname, setLname] = useState("Doe");

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import SidebarLayout from "@/layouts/sidebar-layout";
 import { Button } from "@/components/ui/button";
-import { Download, ExternalLink, Globe } from "lucide-react";
+import { Globe } from "lucide-react";
 
 import PageHeader from "@/components/PageHeader";
 import { Avatar } from "@/components/ui/avatar";
@@ -567,9 +567,7 @@ export default function CreateRiskWaiver() {
 			]}
 		>
 			<div className="space-y-4">
-				<CustomerHeader
-					onOpenExportDialog={() => setOpenExportDialog(true)}
-				/>
+				<CustomerHeader />
 			</div>
 
 			{/* Export Dialog */}
@@ -597,11 +595,7 @@ export default function CreateRiskWaiver() {
 }
 
 // Reusable Section Components
-function CustomerHeader({
-	onOpenExportDialog,
-}: {
-	onOpenExportDialog: () => void;
-}) {
+function CustomerHeader() {
 	return (
 		<>
 			<PageHeader
