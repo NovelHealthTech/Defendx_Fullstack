@@ -8,7 +8,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { IPAddress, IPRange } from "@/lib/types";
+import type { IPAddressData, IPRange } from "@/lib/types";
 import { IPAddresses as ipAddressesData } from "@/lib/DATA";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -28,7 +28,7 @@ const IPRangeDetails: React.FC<IPRangeDetailsProps> = ({
 	}
 
 	const ipsInRange = ipAddressesData.filter(
-		(ip: IPAddress) =>
+		(ip: IPAddressData) =>
 			ip.range === `${ipRange.rangeStart} - ${ipRange.rangeEnd}`
 	);
 
@@ -103,7 +103,7 @@ const IPRangeDetails: React.FC<IPRangeDetailsProps> = ({
 						<TabsTrigger value="domains">Domains (1)</TabsTrigger>
 					</TabsList>
 					<TabsContent value="ip-addresses" className="space-y-2">
-						{ipsInRange.map((ip: IPAddress) => (
+						{ipsInRange.map((ip: IPAddressData) => (
 							<div
 								key={ip.ip}
 								className="flex items-center justify-between p-2 border-b last:border-0"
@@ -126,7 +126,7 @@ const IPRangeDetails: React.FC<IPRangeDetailsProps> = ({
 									</TooltipProvider>
 
 									<div className="flex flex-wrap gap-1">
-										{ip.labels.map(
+										{ip.labels?.map(
 											(label: string, i: number) => (
 												<Badge
 													key={i}

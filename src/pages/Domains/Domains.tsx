@@ -138,7 +138,7 @@ const customer = {
 };
 
 export default function Domains() {
-	const { id, domains: customerDomain } = useParams();
+	const { domains: customerDomain } = useParams();
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [allDomains, setAllDomains] = useState<Domain[]>([]);

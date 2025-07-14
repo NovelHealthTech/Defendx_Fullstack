@@ -1,5 +1,4 @@
 import { Link } from "react-router";
-import { GalleryVerticalEnd } from "lucide-react";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { LoginForm } from "../components/login-form";
 

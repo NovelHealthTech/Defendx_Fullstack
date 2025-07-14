@@ -12,6 +12,22 @@ export type IPAddress = {
 	domains?: { hostname: string; automated_score: number }[]; // For detailed IP response
 };
 
+// For static data in DATA.tsx file
+export type IPAddressData = {
+	source: string;
+	ip: string;
+	range: string;
+	owner: string;
+	country: string;
+	asn: string;
+	asnName: string;
+	asnName2: string;
+	asnRegistry: string;
+	protocol: string;
+	labels: string[];
+	score?: number;
+};
+
 export type IPAddressDetail = {
 	ip: string;
 	owner: string;
@@ -44,6 +60,31 @@ export type Domain = {
 	firstScanned?: string;
 	maxScore?: number;
 	scannedOnTime?: string;
+	scannedAt?: string;
 	ipAddresses?: { ip: string; domains: string[] }[];
 	risks?: { title: string; severity: string; description?: string }[];
+	checkResults?: any[];
+};
+
+export type Vendor = {
+	id: string;
+	name: string;
+	primary_hostname: string;
+	score: number;
+	automatedScore: number;
+	assessmentStatus: string;
+};
+
+export type Customer = {
+	id: string;
+	name: string;
+	domain: string;
+	logo: string;
+	score: number;
+	grade: string;
+	automatedScore: number;
+	automatedGrade: string;
+	trend: number;
+	trendUp: boolean;
+	lastAssessed: string;
 };

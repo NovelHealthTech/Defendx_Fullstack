@@ -4,9 +4,6 @@ import axios from "axios";
 import {
 	ChevronDown,
 	Search,
-	Trash2,
-	ArrowUpRight,
-	ArrowDownRight,
 	Plus,
 	BadgePlus,
 	Users,
@@ -14,10 +11,10 @@ import {
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
+import type { Vendor, Customer } from "@/lib/types";
 import { useState, useEffect } from "react";
 import CustomerPortfolioHeader from "@/components/customer-portfolio/CustomerPortfolioHeader";
 import CustomerPortfolioDescription from "@/components/customer-portfolio/CustomerPortfolioDescription";
@@ -28,7 +25,7 @@ import CustomerPortfolioFilterSidebar from "@/components/customer-portfolio/Cust
 
 
 export default function CustomerPortfolio() {
-	const [customers, setCustomers] = useState([]);
+	const [customers, setCustomers] = useState<Customer[]>([]);
 	const [search, setSearch] = useState("");
 
 	useEffect(() => {
@@ -47,8 +44,8 @@ export default function CustomerPortfolio() {
 					}
 				);
 
-				const vendors = response.data.data.vendors || [];
-				const transformedCustomers = vendors.map((vendor) => ({
+				const vendors: Vendor[] = response.data.data.vendors || [];
+				const transformedCustomers: Customer[] = vendors.map((vendor: Vendor) => ({
 					id: vendor.id,
 					name: vendor.name,
 					domain: vendor.primary_hostname,

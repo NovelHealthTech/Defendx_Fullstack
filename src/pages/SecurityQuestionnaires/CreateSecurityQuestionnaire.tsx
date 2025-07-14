@@ -89,7 +89,6 @@ export default function CreateSecurityQuestionnaire() {
 	const [dueDate, setDueDate] = useState("");
 	const [reminderEnabled, setReminderEnabled] = useState(true);
 	const [reminderDate, setReminderDate] = useState("");
-	const [resendEnabled, setResendEnabled] = useState(false);
 	// Only one recipient, always checked, editable, required
 	const [recipients, setRecipients] = useState([
 		{ name: "", email: "", selected: true }
@@ -324,7 +323,7 @@ export default function CreateSecurityQuestionnaire() {
 					</div>
 					<div className="flex flex-col gap-2">
 						<div className="flex items-center gap-2">
-							<Checkbox checked readOnly />
+							<Checkbox checked disabled />
 							<Input
 								placeholder="Name"
 								value={recipients[0]?.name || ""}

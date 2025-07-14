@@ -5,18 +5,10 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ChevronDown, Copy, Edit2, MoreVertical, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import SidebarLayout from "@/layouts/sidebar-layout";
 import PageHeader from "@/components/PageHeader";
-import {
-    DropdownMenu,
-    DropdownMenuTrigger,
-    DropdownMenuContent,
-    DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
 import ImportQuestionnaireDialog from "@/components/questionnaires/ImportQuestionnaireDialog";
-import { useNavigate } from "react-router";
 
 const TABS = [
     { label: "Show all", value: "all" },
@@ -31,7 +23,6 @@ export default function QuestionnaireLibrary() {
     const [questionnaires, setQuestionnaires] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchQuestionnaires = async () => {

@@ -1,4 +1,4 @@
-import React, { lazy } from "react";
+import { lazy } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import Home from "./pages/Home";
 import { isTokenExpired, clearAuthData } from "@/utils/auth";

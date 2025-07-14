@@ -188,7 +188,7 @@ export default function RiskProfile() {
                         {loading && <div>Loading...</div>}
                         {error && <div className="text-red-500">{error}</div>}
                         {/* Show all data, no pagination */}
-                        <DataTable columns={columns} data={filteredData} pagination={true} />
+                        <DataTable columns={columns} data={filteredData} />
                     </CardContent>
                 </Card>
             </div>
@@ -293,7 +293,9 @@ export default function RiskProfile() {
                 side="right"
                 title="Filter by"
             >
-                {/* ...your filter UI here... */}
+                <div className="p-4">
+                    <p>Filter options will be implemented here.</p>
+                </div>
             </DrawerSheet>
 
             {/* Export Dialog */}
@@ -327,7 +329,7 @@ function CustomerHeader({
                         <div className="flex items-center gap-2">
                             <Avatar>
                                 <AvatarFallback>
-                                    {customer.name[0]}
+                                    {customer.name?.[0] || 'N'}
                                 </AvatarFallback>
                             </Avatar>
                             <div>

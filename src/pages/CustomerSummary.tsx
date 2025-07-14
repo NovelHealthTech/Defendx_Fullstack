@@ -1,11 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
-    PieChart,
-    Pie,
-    Cell,
     BarChart,
     Bar,
     XAxis,
@@ -55,12 +52,6 @@ export default function CustomerSummary() {
         { label: "Medium", value: 0, color: "#fbbf24" },
         { label: "Low", value: 0, color: "#22c55e" },
     ]);
-    const [pieData, setPieData] = useState([
-        { name: "IP/Domain Reputation", value: 0, color: "#22c55e" },
-        { name: "Encryption", value: 0, color: "#fbbf24" },
-        { name: "Vulnerability Management", value: 0, color: "#22c55e" },
-        { name: "Attack Surface", value: 0, color: "#22c55e" },
-    ]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -105,12 +96,6 @@ export default function CustomerSummary() {
                         { label: "High", value: Number(data.overall_risk_counts.high ?? 0), color: "#f59e42" },
                         { label: "Medium", value: Number(data.overall_risk_counts.medium ?? 0), color: "#fbbf24" },
                         { label: "Low", value: Number(data.overall_risk_counts.low ?? 0), color: "#22c55e" },
-                    ]);
-                    setPieData([
-                        { name: "IP/Domain Reputation", value: Number(data.categoryScores.ipDomainReputation ?? 0), color: "#22c55e" },
-                        { name: "Encryption", value: Number(data.categoryScores.encryption ?? 0), color: "#fbbf24" },
-                        { name: "Vulnerability Management", value: Number(data.categoryScores.vulnerabilityManagement ?? 0), color: "#22c55e" },
-                        { name: "Attack Surface", value: Number(data.categoryScores.attackSurface ?? 0), color: "#22c55e" },
                     ]);
                 }
             } catch (e) {
@@ -447,7 +432,7 @@ export default function CustomerSummary() {
                         </ResponsiveContainer>
                     </div>
                     <div className="mt-3 flex items-start gap-2 text-sm text-muted-foreground">
-                        <Info className="w-4 h-4 mt-0.5" title="What is Score by Epoch?" />
+                        <Info className="w-4 h-4 mt-0.5" />
                         <span>
                             <b>Score by Epoch</b> shows how your security scores for different metrics (like website, email, network, etc.) have changed over time. Toggle epochs above to compare or focus on specific periods.
                         </span>
@@ -536,7 +521,7 @@ export default function CustomerSummary() {
                         </ResponsiveContainer>
                     </div>
                     <div className="mt-3 flex items-start gap-2 text-sm text-muted-foreground">
-                        <Info className="w-4 h-4 mt-0.5" title="What is Risk Ratings Overview?" />
+                        <Info className="w-4 h-4 mt-0.5" />
                         <span>
                             <b>Risk Ratings Overview</b> displays the count of risks by severity (Critical, High, Medium, Low) for each security category. Toggle severities above to compare or focus on specific risk levels.
                         </span>

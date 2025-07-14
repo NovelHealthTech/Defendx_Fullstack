@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/accordion";
 
 type AccordionItemData = {
-	title: string;
+	title: string | React.ReactNode;
 	content: string | React.ReactNode;
 };
 

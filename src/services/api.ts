@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from "axios";
+import axios, { type AxiosInstance } from "axios";
 
 // Base URL for the API
 const BASE_URL = "https://cyber.defendx.co.in/api";
