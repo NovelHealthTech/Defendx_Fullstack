@@ -1,23 +1,42 @@
 import React, { createContext, useState, useEffect } from "react";
 
-export const SelectedCustomerContext = createContext({
-  selectedCustomer: { id: "", domain: "" },
-  setSelectedCustomer: () => {},
+interface SelectedCustomer {
+  id: string;
+  domain: string;
+  email: string;
+}
+
+interface SelectedCustomerContextType {
+  selectedCustomer: SelectedCustomer;
+  setSelectedCustomer: (customer: SelectedCustomer) => void;
+}
+
+export const SelectedCustomerContext = createContext<SelectedCustomerContextType>({
+  selectedCustomer: { id: "", domain: "", email: "" },
+  setSelectedCustomer: () => { },
 });
 
-export const SelectedCustomerProvider = ({ children }) => {
-  const [selectedCustomer, setSelectedCustomer] = useState({ id: "", domain: "" });
+interface SelectedCustomerProviderProps {
+  children: React.ReactNode;
+}
+
+export const SelectedCustomerProvider: React.FC<SelectedCustomerProviderProps> = ({ children }) => {
+  const [selectedCustomer, setSelectedCustomer] = useState<SelectedCustomer>({ id: "", domain: "", email: "" });
 
   useEffect(() => {
     const id = localStorage.getItem("selectedCustomerId") || "";
     const domain = localStorage.getItem("selectedCustomerDomain") || "";
-    setSelectedCustomer({ id, domain });
+    const email = localStorage.getItem("email") || "";
+    setSelectedCustomer({ id, domain, email });
   }, []);
 
   useEffect(() => {
     if (selectedCustomer.id && selectedCustomer.domain) {
       localStorage.setItem("selectedCustomerId", selectedCustomer.id);
       localStorage.setItem("selectedCustomerDomain", selectedCustomer.domain);
+    }
+    if (selectedCustomer.email) {
+      localStorage.setItem("email", selectedCustomer.email);
     }
   }, [selectedCustomer]);
 

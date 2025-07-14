@@ -1,25 +1,32 @@
-import { AlertCircle, ArrowRight, ChevronRight, Plus, X } from "lucide-react";
+import { AlertCircle, ChevronRight, X, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import DrawerSheet from "@/components/DrawerSheet";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
-import type { IPAddress } from "@/lib/types";
+import type { IPAddress, IPAddressDetail } from "@/lib/types";
 
 interface IPAddressDetailsProps {
 	isOpen: boolean;
 	onClose: () => void;
 	ipAddress: IPAddress | null;
+	ipDetail?: IPAddressDetail | null;
+	loading?: boolean;
 }
 
 const IPAddressDetails: React.FC<IPAddressDetailsProps> = ({
 	isOpen,
 	onClose,
 	ipAddress,
+	ipDetail,
+	loading = false,
 }) => {
 	if (!ipAddress) {
 		return null;
 	}
+
+	// Use detailed data if available, otherwise fall back to basic IP data
+	const displayData = ipDetail || ipAddress;
 
 	return (
 		<DrawerSheet
@@ -29,59 +36,88 @@ const IPAddressDetails: React.FC<IPAddressDetailsProps> = ({
 			className="w-[550px] sm:min-w-[600px] p-0"
 		>
 			<div className="flex items-center justify-between p-4 bg-muted/20">
-				<h2 className="text-2xl font-bold">{ipAddress.ip}</h2>
+				<h2 className="text-2xl font-bold">{displayData.ip}</h2>
 				<Button variant="ghost" size="icon" onClick={onClose}>
 					<X className="h-5 w-5" />
 				</Button>
 			</div>
 
 			<div className="p-6 space-y-8">
+				{loading && (
+					<div className="flex items-center justify-center py-4">
+						<Loader2 className="w-6 h-6 animate-spin mr-2" />
+						<span>Loading IP details...</span>
+					</div>
+				)}
+				
 				{/* IP Address Details */}
 				<div className="space-y-4">
 					<h3 className="text-lg font-semibold">
 						IP address details
 					</h3>
 					<div className="space-y-2 text-sm">
-						<DetailRow label="Source" value={ipAddress.source} />
-						<DetailRow label="Owner" value={ipAddress.owner} />
-						<DetailRow
-							label="IP Range"
+						<DetailRow 
+							label="Source" 
 							value={
-								<span className="flex items-center gap-2">
-									{ipAddress.range.split(" - ")[0]}{" "}
-									<ArrowRight className="h-4 w-4" />{" "}
-									{ipAddress.range.split(" - ")[1]}
-								</span>
-							}
+								<div className="flex flex-wrap gap-1">
+									{(displayData.sources || []).map((source, i) => (
+										<Badge key={i} variant="outline">
+											{source}
+										</Badge>
+									))}
+								</div>
+							} 
 						/>
-						<DetailRow label="Country" value={ipAddress.country} />
+						<DetailRow label="Owner" value={displayData.owner} />
+						<DetailRow label="Country" value={displayData.country} />
 						<DetailRow
 							label="Autonomous System (AS)"
-							value={ipAddress.asnName2}
+							value={displayData.as_name}
 						/>
-						<DetailRow label="ASN" value={ipAddress.asn} />
-						<DetailRow
-							label="Services"
-							value={
-								<Badge variant="outline">
-									{ipAddress.protocol}
-								</Badge>
-							}
-						/>
-						<DetailRow
-							label="Labels"
-							value={
-								<Button
-									variant="outline"
-									size="sm"
-									className="border-dashed text-muted-foreground"
-								>
-									<Plus className="w-3 h-3 mr-1" /> Add label
-								</Button>
-							}
-						/>
+						<DetailRow label="ASN" value={`AS${displayData.asn}`} />
+						{ipAddress.services && ipAddress.services.length > 0 && (
+							<DetailRow
+								label="Services"
+								value={
+									<div className="flex flex-wrap gap-1">
+										{ipAddress.services.map((service, i) => (
+											<Badge key={i} variant="outline">
+												{service}
+											</Badge>
+										))}
+									</div>
+								}
+							/>
+						)}
 					</div>
 				</div>
+
+				{/* Domains section - only show if we have detailed data */}
+				{ipDetail && ipDetail.domains && ipDetail.domains.length > 0 && (
+					<>
+						<Separator />
+						<div className="space-y-4">
+							<h3 className="text-lg font-semibold">
+								Associated Domains
+							</h3>
+							<div className="space-y-2">
+								{ipDetail.domains.map((domain, index) => (
+									<div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+										<div className="flex flex-col">
+											<span className="font-medium">{domain.hostname}</span>
+										</div>
+										<div className="flex items-center gap-2">
+											<Badge variant="secondary">
+												Score: {domain.automated_score}
+											</Badge>
+											<ChevronRight className="w-4 h-4 text-muted-foreground" />
+										</div>
+									</div>
+								))}
+							</div>
+						</div>
+					</>
+				)}
 
 				<Separator />
 
@@ -98,36 +134,9 @@ const IPAddressDetails: React.FC<IPAddressDetailsProps> = ({
 						<AlertDescription>
 							This IP is sourced from DNS records, so it does not
 							receive its own score. To view scoring and risks
-							relating to this IP, click on a domain below.
+							relating to this IP, click on a domain above.
 						</AlertDescription>
 					</Alert>
-				</div>
-
-				<Separator />
-
-				{/* Domains */}
-				<div className="space-y-4">
-					<h3 className="text-lg font-semibold">Domains (1)</h3>
-					<div className="rounded-lg border">
-						<div className="flex items-center justify-between p-3">
-							<a
-								href="#"
-								className="text-blue-600 hover:underline"
-							>
-								kaspersky.gvk.com
-							</a>
-							<div className="flex items-center gap-2">
-								<Badge
-									variant="outline"
-									className="text-orange-500 border-orange-500"
-								>
-									D
-								</Badge>
-								<span className="font-semibold">399</span>
-								<ChevronRight className="h-5 w-5 text-muted-foreground" />
-							</div>
-						</div>
-					</div>
 				</div>
 			</div>
 		</DrawerSheet>

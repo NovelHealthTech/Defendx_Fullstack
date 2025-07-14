@@ -252,66 +252,162 @@ export const routes = [
 	},
 	{
 		path: "/risk-assessments/create",
-		element: <CreateRiskAssessment />,
+		element: <ProtectedRoute />,
+		children: [
+			{
+				path: "",
+				element: <CreateRiskAssessment />,
+			},
+		],
 	},
 	{
 		path: "/risk-assessments/:id/edit",
-		element: <EditRiskAssessment />,
+		element: <ProtectedRoute />,
+		children: [
+			{
+				path: "",
+				element: <EditRiskAssessment />,
+			},
+		],
 	},
 	{
-		path: "/ip-addresses",
-		element: <IPAddresses />,
+		path: "/ip-addresses/:id/:domains",
+		element: <ProtectedRoute />,
+		children: [
+			{
+				path: "",
+				element: <IPAddresses />,
+			},
+		],
 	},
 	{
-		path: "/domains",
-		element: <Domains />,
+		path: "/domains/:id/:domains",
+		element: <ProtectedRoute />,
+		children: [
+			{
+				path: "",
+				element: <Domains />,
+			},
+		],
 	},
 	{
 		path: "/additional-evidence",
-		element: <AdditionalEvidence />,
+		element: <ProtectedRoute />,
+		children: [
+			{
+				path: "",
+				element: <AdditionalEvidence />,
+			},
+		],
 	},
 	{
 		path: "/switch-account",
-		element: <SwitchAccount />,
+		element: <ProtectedRoute />,
+		children: [
+			{
+				path: "",
+				element: <SwitchAccount />,
+			},
+		],
 	},
 	{
 		path: "/settings/user",
-		element: <SettingsUser />,
+		element: <ProtectedRoute />,
+		children: [
+			{
+				path: "",
+				element: <SettingsUser />,
+			},
+		],
 	},
 	{
 		path: "/settings/edit-user/:id",
-		element: <EditUser />,
+		element: <ProtectedRoute />,
+		children: [
+			{
+				path: "",
+				element: <EditUser />,
+			},
+		],
 	},
 	{
 		path: "/modified-risks",
-		element: <ModifiedRisks />,
+		element: <ProtectedRoute />,
+		children: [
+			{
+				path: "",
+				element: <ModifiedRisks />,
+			},
+		],
 	},
 	{
 		path: "/modified-risks/create-risk-waiver",
-		element: <CreateRiskWaiver />,
+		element: <ProtectedRoute />,
+		children: [
+			{
+				path: "",
+				element: <CreateRiskWaiver />,
+			},
+		],
 	},
 	{
 		path: "/remediation",
-		element: <Remediation />,
+		element: <ProtectedRoute />,
+		children: [
+			{
+				path: "",
+				element: <Remediation />,
+			},
+		],
 	},
 	{
 		path: "/remediation/create",
-		element: <CreateRemediation />,
+		element: <ProtectedRoute />,
+		children: [
+			{
+				path: "",
+				element: <CreateRemediation />,
+			},
+		],
 	},
 	{
 		path: "/fourth-parties",
-		element: <FourthParties />,
+		element: <ProtectedRoute />,
+		children: [
+			{
+				path: "",
+				element: <FourthParties />,
+			},
+		],
 	},
 	{
 		path: "/fourth-parties/add-fourth-party",
-		element: <AddFourthParty />,
+		element: <ProtectedRoute />,
+		children: [
+			{
+				path: "",
+				element: <AddFourthParty />,
+			},
+		],
 	},
 	{
 		path: "/fourth-parties/edit/:id",
-		element: <AddFourthParty />,
+		element: <ProtectedRoute />,
+		children: [
+			{
+				path: "",
+				element: <AddFourthParty />,
+			},
+		],
 	},
 	{
 		path: "/vulnerabilities",
-		element: <Vulnerabilities />,
+		element: <ProtectedRoute />,
+		children: [
+			{
+				path: "",
+				element: <Vulnerabilities />,
+			},
+		],
 	},
 ];

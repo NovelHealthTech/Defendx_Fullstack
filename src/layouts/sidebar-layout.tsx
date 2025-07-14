@@ -26,15 +26,17 @@ import {
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
+import { handleLogout } from "@/utils/auth";
+// import { useAutoPageLoader } from "@/hooks/useAutoPageLoader";
 
 const mockAccounts = [
 	{ name: "Digit Insurance", email: "user@digitinsurance.com" },
 	{
 		name: "Zoom Insurance Brokers",
-		email: "rahul.n@zoominsurancebrokers.com",
+		email: localStorage.getItem("email") || "",
 	},
 ];
-const currentAccountEmail = "rahul.n@zoominsurancebrokers.com";
+const currentAccountEmail = localStorage.getItem("email") || "";
 
 export default function SidebarLayout({
 	children,
@@ -46,6 +48,9 @@ export default function SidebarLayout({
 		href: string;
 	}[];
 }) {
+	// Temporarily disable automatic page loading to test API loader
+	// useAutoPageLoader();
+	
 	const [currentAccount] = useState(
 		mockAccounts.find((a) => a.email === currentAccountEmail) ||
 			mockAccounts[0]
@@ -139,18 +144,18 @@ export default function SidebarLayout({
 								<DropdownMenuLabel className="truncate text-xs font-normal px-4 py-2">
 									{currentAccount.email}
 								</DropdownMenuLabel>
-								<DropdownMenuSeparator />
+								{/* <DropdownMenuSeparator />
 								<DropdownMenuItem
 									className="px-4 py-2"
 									onSelect={(e) => e.preventDefault()}
 								>
 									Audit Log
 								</DropdownMenuItem>
-								<DropdownMenuSeparator />
-								<DropdownMenuLabel className="px-4 py-1 text-xs text-gray-400 select-none">
+								<DropdownMenuSeparator /> */}
+								{/* <DropdownMenuLabel className="px-4 py-1 text-xs text-gray-400 select-none">
 									Switch account
-								</DropdownMenuLabel>
-								{mockAccounts.map((account) => (
+								</DropdownMenuLabel> */}
+								{/* {mockAccounts.map((account) => (
 									<DropdownMenuItem
 										asChild
 										key={account.email}
@@ -162,11 +167,11 @@ export default function SidebarLayout({
 											{account.name}
 										</Link>
 									</DropdownMenuItem>
-								))}
+								))} */}
 								<DropdownMenuSeparator />
 								<DropdownMenuItem
 									className="px-4 py-2 text-red-600"
-									onSelect={(e) => e.preventDefault()}
+									onClick={handleLogout}
 								>
 									Sign out
 								</DropdownMenuItem>

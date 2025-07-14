@@ -1,16 +1,25 @@
 export type IPAddress = {
-	source: string;
 	ip: string;
-	range: string;
 	owner: string;
 	country: string;
+	asn: number;
+	as_name: string;
+	services?: string[];
+	sources?: string[];
 	score?: number;
-	asn: string;
-	asnName: string;
-	asnName2: string;
-	asnRegistry: string;
-	protocol: string;
-	labels: string[];
+	range?: string;
+	labels?: string[];
+	domains?: { hostname: string; automated_score: number }[]; // For detailed IP response
+};
+
+export type IPAddressDetail = {
+	ip: string;
+	owner: string;
+	country: string;
+	asn: number;
+	as_name: string;
+	sources: string[];
+	domains: { hostname: string; automated_score: number }[];
 };
 
 export type IPRange = {

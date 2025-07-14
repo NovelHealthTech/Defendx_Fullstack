@@ -1,3 +1,5 @@
+import { logout as logoutApi } from "./api";
+
 /**
  * Stores the JWT token and its expiry time in localStorage.
  * @param token - The JWT token string.
@@ -12,8 +14,28 @@ export function setAuthData(token: string, expiresIn: number) {
  * Clears all authentication data from localStorage.
  */
 export function clearAuthData() {
-  console.log("sdmemde")
+  console.log("Clearing authentication data");
   localStorage.clear();
+}
+
+/**
+ * Handles complete logout process: calls API, clears localStorage, and redirects to home
+ */
+export async function handleLogout(): Promise<void> {
+  try {
+    // Call the logout API
+    await logoutApi();
+    console.log("Successfully logged out from server");
+  } catch (error) {
+    console.error("Error during logout API call:", error);
+    // Continue with cleanup even if API call fails
+  } finally {
+    // Always clear localStorage and redirect
+    clearAuthData();
+    
+    // Redirect to home page
+    window.location.href = "/";
+  }
 }
 
 /**

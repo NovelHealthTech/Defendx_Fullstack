@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import SidebarLayout from "@/layouts/sidebar-layout";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,8 +9,6 @@ import {
 	Search,
 	Trash2,
 	ChevronRight,
-	ArrowRight,
-	ArrowDown,
 	Info,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -18,36 +16,40 @@ import { Badge } from "@/components/ui/badge";
 import PageHeader from "@/components/PageHeader";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { CardTitle } from "@/components/ui/card";
-import { Link } from "react-router";
+import { Link, useParams } from "react-router";
 import ExportDialog from "@/components/ExportDialog";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import {
-	IPAddresses as ipAddressesData,
-	ipRanges as ipRangesData,
-} from "@/lib/DATA";
 import DrawerSheet from "@/components/DrawerSheet";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import CustomAccordion from "@/components/CustomAccordion";
 import IPAddressDetails from "./IPAddressDetails";
-import type { IPAddress, IPRange } from "@/lib/types";
-import { Checkbox } from "@/components/ui/checkbox";
-import IPRangeDetails from "./IPRangeDetails";
+import type { IPAddress, IPAddressDetail } from "@/lib/types";
+import apiClient from "@/utils/apiInterceptor";
+import { TableLoader } from "@/components/ui/loader";
 
-const customer = {
-	name: "Adani Group",
-	domain: "adani.com",
-	industry: "Asphalt Products Manufacturing",
-	rating: 794,
-	ratingGrade: "B",
-	ratingMax: 950,
-	employees: 29200,
-	headquarters: "Ahmedabad, GJ",
-};
+// API Types
+interface ApiIPResponse {
+	success: boolean;
+	data: {
+		ips: IPAddress[];
+	};
+}
+
+interface ApiIPDetailResponse {
+	success: boolean;
+	data: IPAddressDetail;
+	http_code: number;
+}
 
 export default function IPAddresses() {
+	const { hostname } = useParams();
 	const [search, setSearch] = useState("");
+	const [ipAddressesData, setIpAddressesData] = useState<IPAddress[]>([]);
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const [customerDomain, setCustomerDomain] = useState<string>("");
 	// const [isMonitorDialogOpen, setIsMonitorDialogOpen] = useState(false);
 	const [openFilterSidebar, setOpenFilterSidebar] = React.useState(false);
 	const [openExportDialog, setOpenExportDialog] = React.useState(false);
@@ -68,33 +70,90 @@ export default function IPAddresses() {
 	const [asnSearch, setAsnSearch] = useState("");
 	const [ipCountrySearch, setIpCountrySearch] = useState("");
 	const [selectedIp, setSelectedIp] = useState<IPAddress | null>(null);
-	const [ipRangeSearch, setIpRangeSearch] = useState("");
-	const [ipRangeLabelMatchType, setIpRangeLabelMatchType] = useState("any");
-	const [ipRangeLabelSearch, setIpRangeLabelSearch] = useState("");
-	const [ipRangeSourceSearch, setIpRangeSourceSearch] = useState("");
-	const [ipRangeOwnerSearch, setIpRangeOwnerSearch] = useState("");
-	const [ipRangeAsnSearch, setIpRangeAsnSearch] = useState("");
-	const [ipRangeCountrySearch, setIpRangeCountrySearch] = useState("");
-	const [activeTab, setActiveTab] = useState("portfolio");
-	const [selectedIpRange, setSelectedIpRange] = useState<IPRange | null>(
-		null
-	);
+	const [selectedIpDetail, setSelectedIpDetail] = useState<IPAddressDetail | null>(null);
+	const [loadingDetail, setLoadingDetail] = useState(false);
 	const [showInfo, setShowInfo] = useState(true);
 	const handleRowClick = (ip: IPAddress) => {
 		setSelectedIp(ip);
+		fetchIPDetail(ip.ip);
 	};
 
 	const handleCloseDetails = () => {
 		setSelectedIp(null);
+		setSelectedIpDetail(null);
 	};
 
-	const handleIpRangeRowClick = (ipRange: IPRange) => {
-		setSelectedIpRange(ipRange);
+	// API Functions
+	const fetchIPAddresses = async (customerHostname: string) => {
+		setLoading(true);
+		setError(null);
+		try {
+			const response = await apiClient.post<ApiIPResponse>(
+				'https://cyber.defendx.co.in/api/upguard/get-vendor-ip',
+				{ hostname: customerHostname },
+				{
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				}
+			);
+
+			if (response.data.success) {
+				// Transform API response to match our component structure
+				const transformedData: IPAddress[] = response.data.data.ips.map((ip: any) => ({
+					...ip,
+					labels: [], // Initialize empty labels array
+					services: ip.services || [], // Ensure services is always an array
+					sources: ip.sources || [], // Ensure sources is always an array
+				}));
+				setIpAddressesData(transformedData);
+			} else {
+				throw new Error('Failed to fetch IP addresses');
+			}
+		} catch (err) {
+			console.error('Error fetching IP addresses:', err);
+			setError(err instanceof Error ? err.message : 'Failed to fetch IP addresses');
+			setIpAddressesData([]); // Reset to empty array on error
+		} finally {
+			setLoading(false);
+		}
 	};
 
-	const handleCloseIpRangeDetails = () => {
-		setSelectedIpRange(null);
+	const fetchIPDetail = async (ip: string) => {
+		setLoadingDetail(true);
+		try {
+			const response = await apiClient.post<ApiIPDetailResponse>(
+				'https://cyber.defendx.co.in/api/upguard/get-vendor-ip-detail',
+				{ 
+					vendor_primary_hostname: customerDomain,
+					ip: ip 
+				},
+				{
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				}
+			);
+
+			if (response.data.success) {
+				setSelectedIpDetail(response.data.data);
+			} else {
+				throw new Error('Failed to fetch IP details');
+			}
+		} catch (err) {
+			console.error('Error fetching IP details:', err);
+		} finally {
+			setLoadingDetail(false);
+		}
 	};
+
+	// Use useEffect to fetch data when component mounts or hostname changes
+	useEffect(() => {
+		// For now, we'll use a default hostname. In a real app, this would come from route params or props
+		const defaultHostname = localStorage.getItem("customerDomain") || "";
+		setCustomerDomain(defaultHostname);
+		fetchIPAddresses(defaultHostname);
+	}, [hostname]);
 
 	return (
 		<SidebarLayout
@@ -110,6 +169,7 @@ export default function IPAddresses() {
 					onOpenExportDialog={() => setOpenExportDialog(true)}
 					showInfo={showInfo}
 					setShowInfo={setShowInfo}
+					domain={customerDomain}
 				/>
 			</div>
 
@@ -132,375 +192,200 @@ export default function IPAddresses() {
 				side="right"
 				title="Filter by"
 			>
-				{activeTab === "portfolio" ? (
-					<>
-						<div className="space-y-2">
-							<CustomAccordion
-								items={[
-									{
-										title: "Label",
-										content: (
-											<div className="space-y-2">
-												<RadioGroup
-													value={labelMatchType}
-													onValueChange={
-														setLabelMatchType
-													}
-													className="flex flex-col gap-1"
-												>
-													<label className="flex items-center gap-2 text-sm">
-														<RadioGroupItem
-															value="any"
-															id="label-any"
-														/>{" "}
-														Match any
-													</label>
-													<label className="flex items-center gap-2 text-sm">
-														<RadioGroupItem
-															value="all"
-															id="label-all"
-														/>{" "}
-														Match all
-													</label>
-													<label className="flex items-center gap-2 text-sm">
-														<RadioGroupItem
-															value="exclude"
-															id="label-exclude"
-														/>{" "}
-														Do not include
-													</label>
-												</RadioGroup>
-												<Input
-													type="text"
-													placeholder="Type to search labels"
-													className="w-full mt-2"
-													value={labelSearch}
-													onChange={(e) =>
-														setLabelSearch(
-															e.target.value
-														)
-													}
-												/>
-											</div>
-										),
-									},
-								]}
-							/>
-							<CustomAccordion
-								items={[
-									{
-										title: "Source",
-										content: (
-											<Input
-												type="text"
-												placeholder="Type to search for source"
-												className="w-full"
-												value={sourceSearch}
-												onChange={(e) =>
-													setSourceSearch(
-														e.target.value
-													)
-												}
-											/>
-										),
-									},
-								]}
-							/>
-							<CustomAccordion
-								items={[
-									{
-										title: "Services",
-										content: (
-											<Input
-												type="text"
-												placeholder="Type to search for service"
-												className="w-full"
-												value={servicesSearch}
-												onChange={(e) =>
-													setServicesSearch(
-														e.target.value
-													)
-												}
-											/>
-										),
-									},
-								]}
-							/>
-							<CustomAccordion
-								items={[
-									{
-										title: "IP owner",
-										content: (
-											<Input
-												type="text"
-												placeholder="Type to search for owner"
-												className="w-full"
-												value={ipOwnerSearch}
-												onChange={(e) =>
-													setIpOwnerSearch(
-														e.target.value
-													)
-												}
-											/>
-										),
-									},
-								]}
-							/>
-							<CustomAccordion
-								items={[
-									{
-										title: "ASN",
-										content: (
-											<Input
-												type="text"
-												placeholder="Type to search for ASN"
-												className="w-full"
-												value={asnSearch}
-												onChange={(e) =>
-													setAsnSearch(e.target.value)
-												}
-											/>
-										),
-									},
-								]}
-							/>
-							<CustomAccordion
-								items={[
-									{
-										title: "IP country",
-										content: (
-											<Input
-												type="text"
-												placeholder="Type to search for country"
-												className="w-full"
-												value={ipCountrySearch}
-												onChange={(e) =>
-													setIpCountrySearch(
-														e.target.value
-													)
-												}
-											/>
-										),
-									},
-								]}
-							/>
-						</div>
-						<div className="flex justify-between gap-2 mt-8 absolute bottom-5 right-5 left-5">
-							<Button
-								variant="outline"
-								className="flex-1"
-								onClick={() => {
-									setLabelMatchType("any");
-									setLabelSearch("");
-									setSourceSearch("");
-									setServicesSearch("");
-									setIpOwnerSearch("");
-									setAsnSearch("");
-									setIpCountrySearch("");
-								}}
-							>
-								<Trash2 className="w-4 h-4 mr-1" /> Reset
-							</Button>
-							<Button
-								className="flex-1"
-								onClick={() => setOpenFilterSidebar(false)}
-							>
-								Apply
-							</Button>
-						</div>
-					</>
-				) : (
-					<>
-						<div className="space-y-2">
-							<CustomAccordion
-								items={[
-									{
-										title: "Label",
-										content: (
-											<div className="space-y-2">
-												<RadioGroup
-													value={
-														ipRangeLabelMatchType
-													}
-													onValueChange={
-														setIpRangeLabelMatchType
-													}
-													className="flex flex-col gap-1"
-												>
-													<label className="flex items-center gap-2 text-sm">
-														<RadioGroupItem
-															value="any"
-															id="label-any-range"
-														/>
-														Match any
-													</label>
-													<label className="flex items-center gap-2 text-sm">
-														<RadioGroupItem
-															value="all"
-															id="label-all-range"
-														/>
-														Match all
-													</label>
-													<label className="flex items-center gap-2 text-sm">
-														<RadioGroupItem
-															value="exclude"
-															id="label-exclude-range"
-														/>
-														Do not include
-													</label>
-												</RadioGroup>
-												<Input
-													type="text"
-													placeholder="Type to search labels"
-													className="w-full mt-2"
-													value={ipRangeLabelSearch}
-													onChange={(e) =>
-														setIpRangeLabelSearch(
-															e.target.value
-														)
-													}
-												/>
-											</div>
-										),
-									},
-								]}
-							/>
-							<CustomAccordion
-								items={[
-									{
-										title: "Source",
-										content: (
-											<Input
-												type="text"
-												placeholder="Type to search for source"
-												className="w-full"
-												value={ipRangeSourceSearch}
-												onChange={(e) =>
-													setIpRangeSourceSearch(
-														e.target.value
-													)
-												}
-											/>
-										),
-									},
-								]}
-							/>
-							<CustomAccordion
-								items={[
-									{
-										title: "IP owner",
-										content: (
-											<Input
-												type="text"
-												placeholder="Type to search for owner"
-												className="w-full"
-												value={ipRangeOwnerSearch}
-												onChange={(e) =>
-													setIpRangeOwnerSearch(
-														e.target.value
-													)
-												}
-											/>
-										),
-									},
-								]}
-							/>
-							<CustomAccordion
-								items={[
-									{
-										title: "ASN",
-										content: (
-											<Input
-												type="text"
-												placeholder="Type to search for ASN"
-												className="w-full"
-												value={ipRangeAsnSearch}
-												onChange={(e) =>
-													setIpRangeAsnSearch(
-														e.target.value
-													)
-												}
-											/>
-										),
-									},
-								]}
-							/>
-							<CustomAccordion
-								items={[
-									{
-										title: "IP country",
-										content: (
-											<Input
-												type="text"
-												placeholder="Type to search for country"
-												className="w-full"
-												value={ipRangeCountrySearch}
-												onChange={(e) =>
-													setIpRangeCountrySearch(
-														e.target.value
-													)
-												}
-											/>
-										),
-									},
-								]}
-							/>
-						</div>
-						<div className="flex justify-between gap-2 mt-8 absolute bottom-5 right-5 left-5">
-							<Button
-								variant="outline"
-								className="flex-1"
-								onClick={() => {
-									setIpRangeLabelMatchType("any");
-									setIpRangeLabelSearch("");
-									setIpRangeSourceSearch("");
-									setIpRangeOwnerSearch("");
-									setIpRangeAsnSearch("");
-									setIpRangeCountrySearch("");
-								}}
-							>
-								<Trash2 className="w-4 h-4 mr-1" /> Reset
-							</Button>
-							<Button
-								className="flex-1"
-								onClick={() => setOpenFilterSidebar(false)}
-							>
-								Apply
-							</Button>
-						</div>
-					</>
-				)}
+				<div className="space-y-2">
+					<CustomAccordion
+						items={[
+							{
+								title: "Label",
+								content: (
+									<div className="space-y-2">
+										<RadioGroup
+											value={labelMatchType}
+											onValueChange={
+												setLabelMatchType
+											}
+											className="flex flex-col gap-1"
+										>
+											<label className="flex items-center gap-2 text-sm">
+												<RadioGroupItem
+													value="any"
+													id="label-any"
+												/>{" "}
+												Match any
+											</label>
+											<label className="flex items-center gap-2 text-sm">
+												<RadioGroupItem
+													value="all"
+													id="label-all"
+												/>{" "}
+												Match all
+											</label>
+											<label className="flex items-center gap-2 text-sm">
+												<RadioGroupItem
+													value="exclude"
+													id="label-exclude"
+												/>{" "}
+												Do not include
+											</label>
+										</RadioGroup>
+										<Input
+											type="text"
+											placeholder="Type to search labels"
+											className="w-full mt-2"
+											value={labelSearch}
+											onChange={(e) =>
+												setLabelSearch(
+													e.target.value
+												)
+											}
+										/>
+									</div>
+								),
+							},
+						]}
+					/>
+					<CustomAccordion
+						items={[
+							{
+								title: "Source",
+								content: (
+									<Input
+										type="text"
+										placeholder="Type to search for source"
+										className="w-full"
+										value={sourceSearch}
+										onChange={(e) =>
+											setSourceSearch(
+												e.target.value
+											)
+										}
+									/>
+								),
+							},
+						]}
+					/>
+					<CustomAccordion
+						items={[
+							{
+								title: "Services",
+								content: (
+									<Input
+										type="text"
+										placeholder="Type to search for service"
+										className="w-full"
+										value={servicesSearch}
+										onChange={(e) =>
+											setServicesSearch(
+												e.target.value
+											)
+										}
+									/>
+								),
+							},
+						]}
+					/>
+					<CustomAccordion
+						items={[
+							{
+								title: "IP owner",
+								content: (
+									<Input
+										type="text"
+										placeholder="Type to search for owner"
+										className="w-full"
+										value={ipOwnerSearch}
+										onChange={(e) =>
+											setIpOwnerSearch(
+												e.target.value
+											)
+										}
+									/>
+								),
+							},
+						]}
+					/>
+					<CustomAccordion
+						items={[
+							{
+								title: "ASN",
+								content: (
+									<Input
+										type="text"
+										placeholder="Type to search for ASN"
+										className="w-full"
+										value={asnSearch}
+										onChange={(e) =>
+											setAsnSearch(e.target.value)
+										}
+									/>
+								),
+							},
+						]}
+					/>
+					<CustomAccordion
+						items={[
+							{
+								title: "IP country",
+								content: (
+									<Input
+										type="text"
+										placeholder="Type to search for country"
+										className="w-full"
+										value={ipCountrySearch}
+										onChange={(e) =>
+											setIpCountrySearch(
+												e.target.value
+											)
+										}
+									/>
+								),
+							},
+						]}
+					/>
+				</div>
+				<div className="flex justify-between gap-2 mt-8 absolute bottom-5 right-5 left-5">
+					<Button
+						variant="outline"
+						className="flex-1"
+						onClick={() => {
+							setLabelMatchType("any");
+							setLabelSearch("");
+							setSourceSearch("");
+							setServicesSearch("");
+							setIpOwnerSearch("");
+							setAsnSearch("");
+							setIpCountrySearch("");
+						}}
+					>
+						<Trash2 className="w-4 h-4 mr-1" /> Reset
+					</Button>
+					<Button
+						className="flex-1"
+						onClick={() => setOpenFilterSidebar(false)}
+					>
+						Apply
+					</Button>
+				</div>
 			</DrawerSheet>
 			<IPAddressDetails
 				isOpen={!!selectedIp}
 				onClose={handleCloseDetails}
 				ipAddress={selectedIp}
-			/>
-			<IPRangeDetails
-				isOpen={!!selectedIpRange}
-				onClose={handleCloseIpRangeDetails}
-				ipRange={selectedIpRange}
+				ipDetail={selectedIpDetail}
+				loading={loadingDetail}
 			/>
 
 			<Tabs
 				defaultValue="portfolio"
 				className="w-full"
-				onValueChange={setActiveTab}
 			>
 				<TabsList className="mb-2 h-auto p-2 w-full">
 					<TabsTrigger
 						value="portfolio"
 						className="flex-col h-auto py-1"
 					>
-						IP Address
-						<small>123 RANGES MONITORED</small>
-					</TabsTrigger>
-					<TabsTrigger
-						value="snapshots"
-						className="flex-col h-auto py-1"
-					>
-						IP Ranges
-						<small>12 RANGES MONITORED</small>
+						IP Addresses
+						<small>{ipAddressesData.length} IP{ipAddressesData.length !== 1 ? 'S' : ''} MONITORED</small>
 					</TabsTrigger>
 				</TabsList>
 				<TabsContent value="portfolio">
@@ -528,314 +413,109 @@ export default function IPAddresses() {
 					</div>
 					{/* Table */}
 					<div className="overflow-x-auto rounded-lg border bg-card">
-						<table className="min-w-full text-sm">
-							<thead>
-								<tr className="text-muted-foreground border-b">
-									<th className="text-left py-2 px-4 font-normal">
-										Source
-									</th>
-									<th className="text-left py-2 px-4 font-normal">
-										IP Address
-									</th>
-									<th className="text-left py-2 px-4 font-normal">
-										Owner
-									</th>
-									<th className="text-left py-2 px-4 font-normal">
-										Autonomous System
-									</th>
-									<th className="text-left py-2 px-4 font-normal">
-										Country
-									</th>
-									<th className="text-left py-2 px-4 font-normal">
-										Score
-									</th>
-									<th className="text-left py-2 px-4 font-normal">
-										Services
-									</th>
-									<th className="text-left py-2 px-4 font-normal">
-										Labels
-									</th>
-
-									<th className="text-center py-2 px-4 font-normal"></th>
-								</tr>
-							</thead>
-							<tbody>
-								{ipAddressesData
-									.filter(
-										(c) =>
-											c.ip
-												.toLowerCase()
-												.includes(
-													search.toLowerCase()
-												) ||
-											c.range
-												.toLowerCase()
-												.includes(search.toLowerCase())
-									)
-									.map((c) => (
-										<tr
-											key={c.ip}
-											className="border-b last:border-0 cursor-pointer"
-											onClick={() => handleRowClick(c)}
-										>
-											<td className="py-2 px-4">
-												<Badge variant="outline">
-													{c.source}
-												</Badge>
-											</td>
-											<td className="py-2 px-4 flex items-center gap-2">
-												{c.ip}
-											</td>
-											<td className="py-2 px-4">
-												<div className="flex flex-col">
-													<span className="font-medium text-foreground leading-tight">
-														{c.owner}
-													</span>
-													<span className="text-xs text-muted-foreground leading-tight">
-														{c.range}
-													</span>
-												</div>
-											</td>
-											<td className="py-2 px-4 flex items-center gap-1">
-												{c.asn}
-											</td>
-											<td className="py-2 px-4">
-												{c.country}
-											</td>
-											<td className="py-2 px-4">
-												{c.score ?? "N/A"}
-											</td>
-											<td className="py-2 px-4">
-												{c.protocol === "HTTPS" ? (
-													<Badge
-														variant="outline"
-														className="bg-green-500 text-white border-0"
-													>
-														{c.protocol}
-													</Badge>
-												) : (
-													<Badge
-														variant="outline"
-														className="bg-red-500 text-white border-0"
-													>
-														{c.protocol}
-													</Badge>
-												)}
-											</td>
-											<td className="py-2 px-4">
-												<Button
-													variant="outline"
-													size="sm"
-													className="border-dashed text-muted-foreground"
-												>
-													+ Add label
-												</Button>
-											</td>
-											<td className="py-2 px-4 text-center">
-												<Button
-													variant="ghost"
-													size="icon"
-												>
-													<ChevronRight className="w-4 h-4 text-muted-foreground" />
-												</Button>
-											</td>
-										</tr>
-									))}
-							</tbody>
-						</table>
-					</div>
-				</TabsContent>
-				<TabsContent value="snapshots">
-					<div className="space-y-4">
-						<div className="flex justify-between items-start">
-							<div>
-								<h2 className="text-xl font-semibold">
-									IP ranges
-								</h2>
-								<p className="text-muted-foreground text-sm">
-									The IP ranges listed here are those owned by
-									the customer. The full range is scanned, and
-									any active IPs found will be listed on the
-									IP Addresses tab.
-								</p>
+						{loading ? (
+							<div className="p-4">
+								<TableLoader rows={8} />
 							</div>
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => setOpenFilterSidebar(true)}
-							>
-								Apply filters{" "}
-								<Filter className="w-4 h-4 ml-2" />
-							</Button>
-						</div>
-
-						<div className="relative">
-							<Input
-								placeholder="Search IP ranges"
-								value={ipRangeSearch}
-								onChange={(e) =>
-									setIpRangeSearch(e.target.value)
-								}
-								className="h-9 w-full pl-8"
-							/>
-							<Search className="absolute left-2.5 top-2.5 w-4 h-4 text-muted-foreground pointer-events-none" />
-						</div>
-
-						{/* Table */}
-						<div className="overflow-x-auto rounded-lg border bg-card">
+						) : error ? (
+							<div className="flex items-center justify-center py-8 text-red-500">
+								<Info className="w-5 h-5 mr-2" />
+								<span>Error: {error}</span>
+							</div>
+						) : (
 							<table className="min-w-full text-sm">
 								<thead>
 									<tr className="text-muted-foreground border-b">
-										<th className="py-2 px-4 font-normal">
-											<Checkbox />
-										</th>
 										<th className="text-left py-2 px-4 font-normal">
 											Source
 										</th>
 										<th className="text-left py-2 px-4 font-normal">
-											Range start
-										</th>
-										<th className="text-left py-2 px-4 font-normal">
-											Range end
+											IP Address
 										</th>
 										<th className="text-left py-2 px-4 font-normal">
 											Owner
 										</th>
 										<th className="text-left py-2 px-4 font-normal">
-											Autonomous System{" "}
-											<Info className="inline w-3 h-3" />
+											Autonomous System
 										</th>
 										<th className="text-left py-2 px-4 font-normal">
-											Registrant Country
+											Country
 										</th>
 										<th className="text-left py-2 px-4 font-normal">
-											IP addresses{" "}
-											<ArrowDown className="inline w-3 h-3" />
+											Score
 										</th>
 										<th className="text-left py-2 px-4 font-normal">
-											Labels
+											Services
 										</th>
 										<th className="text-center py-2 px-4 font-normal"></th>
 									</tr>
 								</thead>
 								<tbody>
-									{ipRangesData
+									{ipAddressesData
 										.filter(
-											(range) =>
-												range.owner
+											(c) =>
+												c.ip
 													.toLowerCase()
 													.includes(
-														ipRangeSearch.toLowerCase()
-													) &&
-												(ipRangeSourceSearch === "" ||
-													range.sources.some(
-														(source) =>
-															source
-																.toLowerCase()
-																.includes(
-																	ipRangeSourceSearch.toLowerCase()
-																)
-													)) &&
-												(ipRangeOwnerSearch === "" ||
-													range.owner
-														.toLowerCase()
-														.includes(
-															ipRangeOwnerSearch.toLowerCase()
-														)) &&
-												(ipRangeAsnSearch === "" ||
-													range.autonomousSystemNumber
-														.toLowerCase()
-														.includes(
-															ipRangeAsnSearch.toLowerCase()
-														) ||
-													range.autonomousSystem
-														.toLowerCase()
-														.includes(
-															ipRangeAsnSearch.toLowerCase()
-														)) &&
-												(ipRangeCountrySearch === "" ||
-													range.country
-														.toLowerCase()
-														.includes(
-															ipRangeCountrySearch.toLowerCase()
-														))
+														search.toLowerCase()
+													) ||
+												c.owner
+													.toLowerCase()
+													.includes(search.toLowerCase())
 										)
-										.map((range, index) => (
+										.map((c) => (
 											<tr
-												key={index}
+												key={c.ip}
 												className="border-b last:border-0 cursor-pointer"
-												onClick={() =>
-													handleIpRangeRowClick(range)
-												}
+												onClick={() => handleRowClick(c)}
 											>
 												<td className="py-2 px-4">
-													<Checkbox />
-												</td>
-												<td className="py-2 px-4">
 													<div className="flex flex-wrap gap-1">
-														{range.sources.map(
-															(source, i) => (
-																<Badge
-																	key={i}
-																	variant={
-																		i === 0
-																			? "destructive"
-																			: i ===
-																			  1
-																			? "outline"
-																			: "default"
-																	}
-																	className={
-																		source ===
-																		"Owned Range"
-																			? "bg-green-100 text-green-800"
-																			: ""
-																	}
-																>
-																	{source}
-																</Badge>
-															)
-														)}
+														{(c.sources || []).map((source, i) => (
+															<Badge key={i} variant="outline">
+																{source}
+															</Badge>
+														))}
 													</div>
 												</td>
-												<td className="py-2 px-4">
-													{range.rangeStart}
-												</td>
 												<td className="py-2 px-4 flex items-center gap-2">
-													{range.rangeEnd}
-													<ArrowRight className="h-4 w-4 text-muted-foreground" />
-												</td>
-												<td className="py-2 px-4">
-													{range.owner}
+													{c.ip}
 												</td>
 												<td className="py-2 px-4">
 													<div className="flex flex-col">
 														<span className="font-medium text-foreground leading-tight">
-															{
-																range.autonomousSystem
-															}
+															{c.owner}
 														</span>
 														<span className="text-xs text-muted-foreground leading-tight">
-															{
-																range.autonomousSystemNumber
-															}
+															AS{c.asn} - {c.as_name}
 														</span>
 													</div>
 												</td>
 												<td className="py-2 px-4">
-													{range.country}
+													AS{c.asn}
 												</td>
 												<td className="py-2 px-4">
-													{range.ipCount}
+													{c.country}
 												</td>
 												<td className="py-2 px-4">
-													<Button
-														variant="outline"
-														size="sm"
-														className="border-dashed text-muted-foreground"
-													>
-														+ Add label
-													</Button>
+													{c.score ?? "N/A"}
+												</td>
+												<td className="py-2 px-4">
+													<div className="flex flex-wrap gap-1">
+														{(c.services || []).map((service, i) => (
+															<Badge
+																key={i}
+																variant="outline"
+																className={
+																	service === "HTTPS"
+																		? "bg-green-500 text-white border-0"
+																		: "bg-red-500 text-white border-0"
+																}
+															>
+																{service}
+															</Badge>
+														))}
+													</div>
 												</td>
 												<td className="py-2 px-4 text-center">
 													<Button
@@ -849,7 +529,7 @@ export default function IPAddresses() {
 										))}
 								</tbody>
 							</table>
-						</div>
+						)}
 					</div>
 				</TabsContent>
 			</Tabs>
@@ -862,11 +542,22 @@ function CustomerHeader({
 	onOpenExportDialog,
 	showInfo,
 	setShowInfo,
+	domain,
 }: {
 	onOpenExportDialog: () => void;
 	showInfo: boolean;
 	setShowInfo: (showInfo: boolean) => void;
+	domain: string;
 }) {
+	// Extract company name from domain (simple logic)
+	const getCompanyName = (domain: string) => {
+		if (!domain) return "Company";
+		const name = domain.split('.')[0];
+		return name.charAt(0).toUpperCase() + name.slice(1);
+	};
+
+	const companyName = getCompanyName(domain);
+
 	return (
 		<>
 			<PageHeader
@@ -875,18 +566,18 @@ function CustomerHeader({
 						<div className="flex items-center gap-2">
 							<Avatar>
 								<AvatarFallback>
-									{customer.name[0]}
+									{companyName[0]}
 								</AvatarFallback>
 							</Avatar>
 							<div>
 								<CardTitle className="text-md flex items-center gap-2">
-									{customer.name}
+									{companyName}
 									<Link
 										to={"#"}
 										className="text-xs flex items-center gap-1 hover:underline text-blue-500"
 									>
 										<Globe className="w-3 h-3" />{" "}
-										{customer.domain}
+										{domain}
 									</Link>
 								</CardTitle>
 							</div>

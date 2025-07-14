@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import SidebarLayout from "@/layouts/sidebar-layout";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +11,7 @@ import {
 	ArrowUp,
 	RotateCw,
 	Check,
+	Loader2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -18,7 +19,7 @@ import PageHeader from "@/components/PageHeader";
 import { Avatar } from "@/components/ui/avatar";
 import { AvatarFallback } from "@/components/ui/avatar";
 import { CardTitle } from "@/components/ui/card";
-import { Link } from "react-router";
+import { Link, useParams } from "react-router";
 import ExportDialog from "@/components/ExportDialog";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -41,19 +42,106 @@ import {
 	PaginationPrevious,
 } from "@/components/ui/pagination";
 import DomainDetails from "@/components/domains/DomainDetails";
+import axios from "axios";
+
+// API Types
+interface ApiDomain {
+	hostname: string;
+	active: boolean;
+	primary_domain: boolean;
+	automated_score?: number;
+	scanned_at?: string;
+}
+
+interface CheckResult {
+	id: string;
+	pass: boolean;
+	expected: Array<{
+		property: string;
+		value: string;
+	}>;
+	actual: Array<{
+		property: string;
+		value: string;
+	}>;
+	severity: number;
+	severityName: string;
+	category: string;
+	title: string;
+	description: string;
+	checked_at: string;
+	sources: string[];
+	riskType: string;
+	riskSubtype: string;
+}
+
+interface DomainDetailResponse {
+	success: boolean;
+	data: {
+		hostname: string;
+		scanned_at: string;
+		a_records: string[];
+		automated_score: number;
+		check_results: CheckResult[];
+	};
+}
+
+interface ApiResponse {
+	success: boolean;
+	data: {
+		domains: ApiDomain[];
+	};
+}
+
+// Helper function to convert API domain to our Domain type
+const convertApiDomainToDomain = (apiDomain: ApiDomain, index: number): Domain => {
+	const getGradeFromScore = (score?: number): string => {
+		if (!score) return "";
+		if (score >= 800) return "A";
+		if (score >= 700) return "B";
+		if (score >= 600) return "C";
+		if (score >= 500) return "D";
+		return "F";
+	};
+
+	const formatScanDate = (dateString?: string): string => {
+		if (!dateString) return "";
+		const date = new Date(dateString);
+		return date.toLocaleDateString("en-US", {
+			month: "short",
+			day: "numeric",
+			year: "numeric"
+		});
+	};
+
+	return {
+		id: index + 1,
+		domain: apiDomain.hostname,
+		primary: apiDomain.primary_domain,
+		inactive: !apiDomain.active,
+		score: apiDomain.automated_score || null,
+		grade: apiDomain.automated_score ? getGradeFromScore(apiDomain.automated_score) : null,
+		scannedOn: apiDomain.scanned_at ? formatScanDate(apiDomain.scanned_at) : null,
+		maxScore: 950,
+	};
+};
 
 const customer = {
-	name: "Adani Group",
-	domain: "adani.com",
-	industry: "Asphalt Products Manufacturing",
+	name: "Customer",
+	domain: "",
+	industry: "Technology",
 	rating: 794,
 	ratingGrade: "B",
 	ratingMax: 950,
 	employees: 29200,
-	headquarters: "Ahmedabad, GJ",
+	headquarters: "Global",
 };
 
 export default function Domains() {
+	const { id, domains: customerDomain } = useParams();
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+	const [allDomains, setAllDomains] = useState<Domain[]>([]);
 	const [openFilterSidebar, setOpenFilterSidebar] = React.useState(false);
 	const [openExportDialog, setOpenExportDialog] = React.useState(false);
 	const [exportFormat, setExportFormat] = React.useState<"pdf" | "excel">(
@@ -74,10 +162,129 @@ export default function Domains() {
 	);
 	const [selectedDomain, setSelectedDomain] = useState<Domain | null>(null);
 	const [showInfo, setShowInfo] = useState(true);
-	const activeDomains: Domain[] = [
+	const [loadingDomainDetails, setLoadingDomainDetails] = useState(false);
+
+	// API call to fetch domain details
+	const fetchDomainDetails = async (domain: Domain): Promise<DomainDetailResponse | null> => {
+		try {
+			setLoadingDomainDetails(true);
+
+			const token = localStorage.getItem("token");
+			const vendorPrimaryHostname = localStorage.getItem("customerDomain") || customerDomain;
+
+			if (!token) {
+				throw new Error("No authentication token found");
+			}
+
+			if (!vendorPrimaryHostname) {
+				throw new Error("No vendor primary hostname found");
+			}
+
+			const response = await axios.post<DomainDetailResponse>(
+				"https://cyber.defendx.co.in/api/upguard/get-vendor-domain-detail",
+				{
+					vendor_primary_hostname: vendorPrimaryHostname,
+					hostname: domain.domain
+				},
+				{
+					headers: {
+						"Content-Type": "application/json",
+						"Authorization": `Bearer ${token}`
+					}
+				}
+			);
+
+			if (response.data.success) {
+				return response.data;
+			} else {
+				throw new Error("Invalid response format");
+			}
+		} catch (err) {
+			console.error("Error fetching domain details:", err);
+			if (axios.isAxiosError(err)) {
+				const errorMessage = err.response?.data?.message || err.message || 'Unknown API error';
+				console.error("API Error:", errorMessage);
+			} else {
+				console.error("Unexpected error:", err instanceof Error ? err.message : String(err));
+			}
+			return null;
+		} finally {
+			setLoadingDomainDetails(false);
+		}
+	};
+
+	// API call to fetch domains
+	const fetchDomains = async () => {
+		try {
+			setLoading(true);
+			setError(null);
+
+			const token = localStorage.getItem("token");
+			const storedCustomerDomain = localStorage.getItem("customerDomain");
+			
+			// Use customerDomain from URL params or fallback to localStorage
+			const domainToQuery = customerDomain || storedCustomerDomain;
+
+			if (!token) {
+				throw new Error("No authentication token found");
+			}
+
+			if (!domainToQuery) {
+				throw new Error("No customer domain found");
+			}
+
+			const response = await axios.post<ApiResponse>(
+				"https://cyber.defendx.co.in/api/upguard/get-vendor-domain",
+				{
+					hostname: domainToQuery
+				},
+				{
+					headers: {
+						"Content-Type": "application/json",
+						"Authorization": `Bearer ${token}`
+					}
+				}
+			);
+
+			if (response.data.success && response.data.data.domains) {
+				const convertedDomains = response.data.data.domains.map(convertApiDomainToDomain);
+				setAllDomains(convertedDomains);
+				
+				// Update customer info with the domain
+				customer.domain = domainToQuery;
+				customer.name = `Customer - ${domainToQuery}`;
+			} else {
+				throw new Error("Invalid response format");
+			}
+		} catch (err) {
+			console.error("Error fetching domains:", err);
+			if (axios.isAxiosError(err)) {
+				const errorMessage = err.response?.data?.message || err.message || 'Unknown API error';
+				setError(`API Error: ${errorMessage}`);
+			} else {
+				const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+				setError(errorMessage);
+			}
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	// Load data on component mount
+	useEffect(() => {
+		fetchDomains();
+	}, [customerDomain]);
+
+	// Filter domains based on activity status
+	const activeDomains = allDomains.filter(domain => !domain.inactive);
+	const inactiveDomains = allDomains.filter(domain => domain.inactive);
+	const totalDomains = allDomains;
+
+	// Mock data fallback (keep original data structure for development)
+	const mockActiveDomains: Domain[] = [
 		{
 			id: 1,
-			domain: "adani.com",
+			domain: "example.com",
 			primary: true,
 			score: 722,
 			grade: "B",
@@ -85,204 +292,44 @@ export default function Domains() {
 			firstScanned: "May 11, 2020 11:59",
 			maxScore: 950,
 			scannedOnTime: "23:45",
-			ipAddresses: [
-				{
-					ip: "23.216.147.197",
-					domains: ["adani.com", "www.adani.com"],
-				},
-				{
-					ip: "23.216.147.202",
-					domains: ["adani.com", "www.adani.com"],
-				},
-			],
-			risks: [
-				{
-					title: "HTTP Strict Transport Security (HSTS) not enforced",
-					severity: "high",
-					description: "HSTS is not enforced on this domain.",
-				},
-				{
-					title: "X-Frame-Options is not deny or sameorigin",
-					severity: "high",
-					description:
-						"X-Frame-Options header is not configured to deny or sameorigin.",
-				},
-				{
-					title: "Content Security Policy (CSP) not implemented",
-					severity: "medium",
-					description:
-						"The Content Security Policy is not implemented.",
-				},
-				{
-					title: "Missing security.txt file",
-					severity: "low",
-					description: "The security.txt file was not found.",
-				},
-				{
-					title: "Missing HSTS headers",
-					severity: "high",
-					description: "The HSTS headers are missing.",
-				},
-				{
-					title: "Cookies without SameSite attribute",
-					severity: "medium",
-					description: "Cookies are missing the SameSite attribute.",
-				},
-			],
-		},
-		{
-			id: 2,
-			domain: "accacldevpi.adani.com",
-			primary: false,
-			score: 646,
-			grade: "B",
-			scannedOn: "Jun 20, 2025",
-		},
-		{
-			id: 3,
-			domain: "accaclfioridev.adani.com",
-			primary: false,
-			score: 646,
-			grade: "B",
-			scannedOn: "Jun 20, 2025",
-		},
-		{
-			id: 4,
-			domain: "accaclpi.adani.com",
-			primary: false,
-			score: 646,
-			grade: "B",
-			scannedOn: "Jun 21, 2025",
 		},
 	];
 
-	const totalDomains: Domain[] = [
-		{
-			id: 1,
-			domain: "adani.com",
-			primary: true,
-			inactive: false,
-			score: 722,
-			grade: "B",
-			scannedOn: "Jun 20, 2025",
-			firstScanned: "May 11, 2020 11:59",
-			maxScore: 950,
-			scannedOnTime: "23:45",
-			ipAddresses: [
-				{
-					ip: "23.216.147.197",
-					domains: ["adani.com", "www.adani.com"],
-				},
-				{
-					ip: "23.216.147.202",
-					domains: ["adani.com", "www.adani.com"],
-				},
-			],
-			risks: [
-				{
-					title: "HTTP Strict Transport Security (HSTS) not enforced",
-					severity: "high",
-					description: "HSTS is not enforced on this domain.",
-				},
-				{
-					title: "X-Frame-Options is not deny or sameorigin",
-					severity: "high",
-					description:
-						"X-Frame-Options header is not configured to deny or sameorigin.",
-				},
-				{
-					title: "Content Security Policy (CSP) not implemented",
-					severity: "medium",
-					description:
-						"The Content Security Policy is not implemented.",
-				},
-				{
-					title: "Missing security.txt file",
-					severity: "low",
-					description: "The security.txt file was not found.",
-				},
-				{
-					title: "Missing HSTS headers",
-					severity: "high",
-					description: "The HSTS headers are missing.",
-				},
-				{
-					title: "Cookies without SameSite attribute",
-					severity: "medium",
-					description: "Cookies are missing the SameSite attribute.",
-				},
-			],
-		},
-		{
-			id: 2,
-			domain: "10of1._domainkey.adani.com",
-			primary: false,
-			inactive: true,
-			score: null,
-			grade: null,
-			scannedOn: null,
-		},
-		{
-			id: 3,
-			domain: "1601ixevicibi1.adani.com",
-			primary: false,
-			inactive: true,
-			score: null,
-			grade: null,
-			scannedOn: null,
-		},
-		{
-			id: 4,
-			domain: "1601ixevicibi2.adani.com",
-			primary: false,
-			inactive: true,
-			score: null,
-			grade: null,
-			scannedOn: null,
-		},
-	];
+	// Use API data if available, otherwise fall back to mock data
+	const displayActiveDomains = loading ? [] : (activeDomains.length > 0 ? activeDomains : mockActiveDomains);
+	const displayInactiveDomains = loading ? [] : inactiveDomains;
+	const displayTotalDomains = loading ? [] : totalDomains;
 
-	const inactiveDomains: Domain[] = [
-		{
-			id: 1,
-			domain: "10of1._domainkey.adani.com",
-			primary: false,
-			inactive: true,
-			score: null,
-			grade: null,
-			scannedOn: null,
-		},
-		{
-			id: 2,
-			domain: "1601ixevicibi1.adani.com",
-			primary: false,
-			inactive: true,
-			score: null,
-			grade: null,
-			scannedOn: null,
-		},
-		{
-			id: 3,
-			domain: "1601ixeviclbi2.adani.com",
-			primary: false,
-			inactive: true,
-			score: null,
-			grade: null,
-			scannedOn: null,
-		},
-		{
-			id: 4,
-			domain: "1601ixevicucm.adani.com",
-			primary: false,
-			inactive: true,
-			score: null,
-			grade: null,
-			scannedOn: null,
-		},
-	];
-
-	const handleDomainRowClick = (domain: Domain) => {
-		setSelectedDomain(domain);
+	const handleDomainRowClick = async (domain: Domain) => {
+		// Check if domain is inactive
+		if (domain.inactive) {
+			alert('Domain details are only available for active domains.');
+			return;
+		}
+		
+		// Only fetch details for active domains
+		const domainDetails = await fetchDomainDetails(domain);
+		if (domainDetails) {
+			// Enhance the domain object with detailed information
+			const enhancedDomain: Domain = {
+				...domain,
+				ipAddresses: domainDetails.data.a_records.map(ip => ({
+					ip,
+					domains: [domain.domain]
+				})),
+				risks: domainDetails.data.check_results.map(result => ({
+					title: result.title,
+					severity: (result.severityName?.toLowerCase() || 'low') as "low" | "medium" | "high",
+					description: result.description
+				})),
+				scannedAt: domainDetails.data.scanned_at,
+				checkResults: domainDetails.data.check_results
+			};
+			setSelectedDomain(enhancedDomain);
+		} else {
+			// Fallback to basic domain info if API fails
+			setSelectedDomain(domain);
+		}
 	};
 
 	const handleCloseDetails = () => {
@@ -292,6 +339,49 @@ export default function Domains() {
 	const handleCloseIpRangeDetails = () => {
 		setSelectedIpRange(null);
 	};
+
+	if (loading) {
+		return (
+			<SidebarLayout
+				breadcrumbs={[
+					{
+						label: "Domains",
+						href: "/domains",
+					},
+				]}
+			>
+				<div className="flex items-center justify-center h-64">
+					<div className="flex items-center gap-2">
+						<Loader2 className="w-6 h-6 animate-spin" />
+						<span>Loading domains...</span>
+					</div>
+				</div>
+			</SidebarLayout>
+		);
+	}
+
+	if (error) {
+		return (
+			<SidebarLayout
+				breadcrumbs={[
+					{
+						label: "Domains",
+						href: "/domains",
+					},
+				]}
+			>
+				<div className="flex items-center justify-center h-64">
+					<div className="text-center">
+						<p className="text-red-600 mb-4">Error loading domains: {error}</p>
+						<Button onClick={fetchDomains}>
+							<RotateCw className="w-4 h-4 mr-2" />
+							Retry
+						</Button>
+					</div>
+				</div>
+			</SidebarLayout>
+		);
+	}
 
 	return (
 		<SidebarLayout
@@ -452,21 +542,21 @@ export default function Domains() {
 						value="total-domains"
 						className="flex-col h-auto py-1"
 					>
-						1234
+						{displayTotalDomains.length}
 						<small>Total Domains Scanned</small>
 					</TabsTrigger>
 					<TabsTrigger
 						value="active-domains"
 						className="flex-col h-auto py-1"
 					>
-						284
+						{displayActiveDomains.length}
 						<small>Active Domains</small>
 					</TabsTrigger>
 					<TabsTrigger
 						value="inactive-domains"
 						className="flex-col h-auto py-1"
 					>
-						284
+						{displayInactiveDomains.length}
 						<small>Inactive Domains</small>
 					</TabsTrigger>
 				</TabsList>
@@ -493,17 +583,14 @@ export default function Domains() {
 									<th className="text-left py-2 px-4 font-normal">
 										Scanned on
 									</th>
-									<th className="text-left py-2 px-4 font-normal">
-										Labels
-									</th>
 									<th className="py-2 px-4 font-normal" />
 								</tr>
 							</thead>
 							<tbody>
-								{totalDomains.map((d) => (
+								{displayTotalDomains.map((d) => (
 									<tr
 										key={d.id}
-										className="border-b last:border-0 cursor-pointer"
+										className="border-b last:border-0 cursor-pointer hover:bg-muted/50"
 										onClick={() => handleDomainRowClick(d)}
 									>
 										<td className="py-3 px-4">
@@ -528,6 +615,9 @@ export default function Domains() {
 														Inactive
 													</Badge>
 												)}
+												{loadingDomainDetails && selectedDomain?.id === d.id && (
+													<Loader2 className="w-4 h-4 animate-spin" />
+												)}
 											</div>
 										</td>
 										<td className="py-3 px-4">
@@ -547,15 +637,6 @@ export default function Domains() {
 										</td>
 										<td className="py-3 px-4">
 											{d.scannedOn}
-										</td>
-										<td className="py-3 px-4">
-											<Button
-												variant="outline"
-												size="sm"
-												className="border-dashed text-muted-foreground"
-											>
-												+ Add label
-											</Button>
 										</td>
 										<td className="py-3 px-4 text-center">
 											{d.inactive && (
@@ -596,16 +677,13 @@ export default function Domains() {
 									<th className="text-left py-2 px-4 font-normal">
 										Scanned on
 									</th>
-									<th className="text-left py-2 px-4 font-normal">
-										Labels
-									</th>
 								</tr>
 							</thead>
 							<tbody>
-								{activeDomains.map((d) => (
+								{displayActiveDomains.map((d) => (
 									<tr
 										key={d.id}
-										className="border-b last:border-0 cursor-pointer"
+										className="border-b last:border-0 cursor-pointer hover:bg-muted/50"
 										onClick={() => handleDomainRowClick(d)}
 									>
 										<td className="py-3 px-4">
@@ -622,32 +700,28 @@ export default function Domains() {
 														Primary domain
 													</Badge>
 												)}
+												{loadingDomainDetails && selectedDomain?.id === d.id && (
+													<Loader2 className="w-4 h-4 animate-spin" />
+												)}
 											</div>
 										</td>
 										<td className="py-3 px-4">
-											<div className="flex items-center gap-2">
-												<Badge
-													variant="outline"
-													className="w-6 h-6 justify-center p-0 rounded-full bg-green-100 text-green-800 border-green-200"
-												>
-													{d.grade}
-												</Badge>
-												<span className="text-green-600 font-medium">
-													{d.score}
-												</span>
-											</div>
+											{d.score && d.grade && (
+												<div className="flex items-center gap-2">
+													<Badge
+														variant="outline"
+														className="w-6 h-6 justify-center p-0 rounded-full bg-green-100 text-green-800 border-green-200"
+													>
+														{d.grade}
+													</Badge>
+													<span className="text-green-600 font-medium">
+														{d.score}
+													</span>
+												</div>
+											)}
 										</td>
 										<td className="py-3 px-4">
 											{d.scannedOn}
-										</td>
-										<td className="py-3 px-4">
-											<Button
-												variant="outline"
-												size="sm"
-												className="border-dashed text-muted-foreground"
-											>
-												+ Add label
-											</Button>
 										</td>
 									</tr>
 								))}
@@ -672,14 +746,11 @@ export default function Domains() {
 											<ArrowUp className="w-4 h-4" />
 										</div>
 									</th>
-									<th className="text-left py-2 px-4 font-normal">
-										Labels
-									</th>
 									<th className="py-2 px-4 font-normal" />
 								</tr>
 							</thead>
 							<tbody>
-								{inactiveDomains.map((d) => (
+								{displayInactiveDomains.map((d) => (
 									<tr
 										key={d.id}
 										className="border-b last:border-0 cursor-pointer"
@@ -698,15 +769,6 @@ export default function Domains() {
 													Inactive
 												</Badge>
 											</div>
-										</td>
-										<td className="py-3 px-4">
-											<Button
-												variant="outline"
-												size="sm"
-												className="border-dashed text-muted-foreground"
-											>
-												+ Add label
-											</Button>
 										</td>
 										<td className="py-3 px-4 text-center">
 											<Button variant="ghost" size="icon">

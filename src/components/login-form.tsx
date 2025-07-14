@@ -40,6 +40,7 @@ export function LoginForm({
             }
 
             setAuthData(data.token, data.expires_in); // Store token and expiry
+            localStorage.setItem("email", email); // Store email in localStorage
 
             navigate("/customer-portfolio");
         } catch (err) {
